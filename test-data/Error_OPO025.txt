@@ -1,0 +1,2 @@
+Error OPO025:
+	Datum dospelosti obaveze je 30 dana od datuma ostvarivanja prihoda. Ako je to neradni dan, prvi sledeci radni dan.
