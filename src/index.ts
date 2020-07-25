@@ -1,6 +1,8 @@
 import { Argv } from 'yargs'
 import * as O from 'fp-ts/lib/Option'
 import { getConf } from './conf'
+import { DividendInfo } from './dividend'
+import { trivialImporter } from './importers/trivial'
 const yargs = require('yargs')
 
 // DobKapProcessArgs is the data structure we receive from yargs
@@ -18,15 +20,22 @@ interface DobKapNormalizedArgs {
   confFilePath: O.Option<string>
 }
 
-const processCommand = (processArgs: DobKapProcessArgs) => {
+const processCommand = async (processArgs: DobKapProcessArgs) => {
   const normArgs: DobKapNormalizedArgs = {
     inputFilePath: processArgs.input,
-    importer: processArgs.importer || 'ibkr',
+    importer: processArgs.importer || 'trivial',
     outputDirPath: processArgs.output || process.cwd(),
     confFilePath: O.fromNullable(processArgs.conf),
   }
   const conf = getConf(normArgs.confFilePath)
-  console.log('hello', normArgs)
+  
+  let dividendInfo: DividendInfo
+  if (normArgs.importer === 'trivial'){
+    dividendInfo = await trivialImporter(processArgs.input)
+  } else {
+    throw new Error('Unknown importer')
+  }
+  console.log(dividendInfo)
 }
 
 yargs.scriptName('dobkap')
