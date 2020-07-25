@@ -1,7 +1,7 @@
 import got from 'got'
 import { NaiveDate } from '../data-types'
 import xmldoc from 'xmldoc'
-import { CurrencyCode } from '../currencies'
+import { CurrencyCode } from '.'
 
 const nbsCurrencyCodeMapping: Map<string, CurrencyCode> = new Map([
   ['EUR', CurrencyCode.EUR],

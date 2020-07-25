@@ -1,4 +1,4 @@
-import { NaiveDate } from "./data-types"
+import { NaiveDate } from "../data-types"
 
 export enum CurrencyCode {
   EUR = 'EUR',

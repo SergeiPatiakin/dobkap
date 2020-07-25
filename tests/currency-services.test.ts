@@ -1,4 +1,4 @@
-import { nbsCurrencyService } from '../src/currency-services/nbs'
+import { nbsCurrencyService } from '../src/currencies/nbs'
 import { toNaiveDate } from '../src/dates'
 import { CurrencyCode } from '../src/currencies'
 

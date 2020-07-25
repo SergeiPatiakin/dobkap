@@ -1,5 +1,4 @@
 import * as t from 'io-ts'
-import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/lib/Option'
 import * as E from 'fp-ts/lib/Either'
 import { DayStringCodec, getValidationErrorMessages } from './data-types'
