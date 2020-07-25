@@ -1,7 +1,7 @@
 import { Argv } from 'yargs'
 import * as O from 'fp-ts/lib/Option'
 import { getConf } from './conf'
-import { DividendInfo } from './dividend'
+import { DividendInfo, getDividendIncomeInfo } from './dividend'
 import { trivialImporter } from './importers/trivial'
 import { currencyService } from './currencies'
 import { toNaiveDate } from './dates'
@@ -37,7 +37,8 @@ const processImport = async (args: DobKapImportArgs) => {
   } else {
     throw new Error('Unknown importer')
   }
-  console.log(dividendInfo)
+  const dividendIncomeInfo = getDividendIncomeInfo(currencyService, dividendInfo)
+  console.log({dividendInfo, dividendIncomeInfo})
 }
 
 interface DobKapCheckRateArgs {

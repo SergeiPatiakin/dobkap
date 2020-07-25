@@ -1,5 +1,5 @@
 import { NaiveDate, CurrencyCode } from "./data-types";
-import { CurrencyServiceRepository } from "./currencies";
+import { CurrencyService } from "./currencies";
 import * as Rsd from "./rsd-amount";
 import { RsdAmount } from "./rsd-amount";
 
@@ -22,10 +22,9 @@ export interface DividendIncomeInfo {
   taxPayable: RsdAmount
 }
 
-export const getDividendIncomeInfo = async (currencyServiceRepo: CurrencyServiceRepository, dividendInfo: DividendInfo): Promise<DividendIncomeInfo> => {
+export const getDividendIncomeInfo = async (currencyService: CurrencyService, dividendInfo: DividendInfo): Promise<DividendIncomeInfo> => {
   const {payingEntity, paymentDate, currencyCode, currencyDividendAmount, currencyWithholdingTaxAmount } = dividendInfo
-  const currencyService = currencyServiceRepo[currencyCode]
-  const exchangeRate = await currencyService(paymentDate)
+  const exchangeRate = await currencyService(paymentDate, currencyCode)
   const grossDividend = Rsd.fromCurrency(exchangeRate, currencyDividendAmount)
   const taxPaidAbroad = Rsd.fromCurrency(exchangeRate, currencyWithholdingTaxAmount)
   const grossTaxPayable = Rsd.multiply(DIVIDEND_TAX_RATE)(grossDividend)
