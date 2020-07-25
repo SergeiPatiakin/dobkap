@@ -17,13 +17,18 @@
     "typescript": "3.9.7"
   },
   "dependencies": {
+    "@types/got": "9.6.11",
     "@types/moment": "2.13.0",
     "@types/node": "14.0.24",
+    "@types/xmldoc": "1.1.4",
     "@types/yargs": "15.0.5",
     "fp-ts": "2.7.1",
+    "got": "11.5.1",
     "io-ts": "2.2.9",
+    "jsdom": "16.3.0",
     "moment": "2.27.0",
     "moment-timezone": "0.5.31",
+    "xmldoc": "1.1.2",
     "yargs": "15.4.1"
   }
 }
