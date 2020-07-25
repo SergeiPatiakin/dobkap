@@ -1,13 +1,14 @@
 import got from 'got'
-import { NaiveDate } from '../data-types'
+import { NaiveDate, CurrencyCode } from '../data-types'
 import xmldoc from 'xmldoc'
-import { CurrencyCode } from '.'
 
 const nbsCurrencyCodeMapping: Map<string, CurrencyCode> = new Map([
   ['EUR', CurrencyCode.EUR],
   ['GBP', CurrencyCode.GBP],
   ['USD', CurrencyCode.USD],
 ])
+
+export const nbsSupportedCurrencies = [...nbsCurrencyCodeMapping.values()]
 
 export const nbsCurrencyService = async (day: NaiveDate, currencyCode: CurrencyCode) => {
   const prelimResult = await got.get('https://nbs.rs/kursnaListaModul/naZeljeniDan.faces')
@@ -44,10 +45,10 @@ export const nbsCurrencyService = async (day: NaiveDate, currencyCode: CurrencyC
   }))
   const exchangeRates = nbsExchangeRates.map(
     ({nbsCurrencyCode, scaleFactor, scaledExchangeRate}) => ({
-      currencyCode: nbsCurrencyCodeMapping.get(nbsCurrencyCode)!,
+      currencyCode: nbsCurrencyCodeMapping.get(nbsCurrencyCode),
       exchangeRate: scaledExchangeRate / scaleFactor
     })
-  )
+  ).filter(x => x.currencyCode)
   // TODO: cache entries in exchangeRates
   return exchangeRates.find(x => x.currencyCode === currencyCode)!.exchangeRate
 }

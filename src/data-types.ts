@@ -11,3 +11,9 @@ export const DayStringCodec = t.string
 export type DayString = t.TypeOf<typeof DayStringCodec>
 
 export const getValidationErrorMessages: (v: t.ValidationError[]) => string[] = A.filterMap(ve => O.fromNullable(ve.message))
+
+export enum CurrencyCode {
+  EUR = 'EUR',
+  GBP = 'GBP',
+  USD = 'USD',
+}

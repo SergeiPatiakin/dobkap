@@ -1,6 +1,6 @@
 import { nbsCurrencyService } from '../src/currencies/nbs'
 import { toNaiveDate } from '../src/dates'
-import { CurrencyCode } from '../src/currencies'
+import { CurrencyCode } from '../src/data-types'
 
 describe('nbs currency services', () => {
   it('End-to-end remote test', async () => {
