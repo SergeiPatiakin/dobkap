@@ -38,7 +38,7 @@ const processImport = async (args: DobKapImportArgs) => {
   }
   const conf = pipe(
     getConf(normArgs.confFilePath),
-    E.fold(() => {throw new Error('Conf not found')}, identity)
+    E.fold(e => {throw new Error(e.join('; '))}, identity)
   )
   
   let dividendInfo: DividendInfo

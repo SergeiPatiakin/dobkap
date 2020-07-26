@@ -24,19 +24,19 @@ type XPathSafeString = string
 // Convert local XPath tag-name selector to namespaced selector
 const nsTag = (tagName: XPathSafeString) => `*["${tagName}"=local-name()]`
 
-// Guaranteed to return the original object
-const castToArray = <T>(a: T) => a as any as T[]
+// Strange behavior with ts-node
+const maybeHead = <T>(a: T | T[]): T => Array.isArray(a) ? (a as any)[0] : a as any
 
 // Mutates the document
 const setText = (document: Document, localXPath: string[], text: string): void => {
   const xPath = localXPath.map(x => `/${nsTag(x)}`).join('')
-  castToArray(document.get(xPath)!)[0].text(text)
+  maybeHead(document.get(xPath)!).text(text)
 }
 
 // Mutates the document
 const setCdata = (document: Document, localXPath: string[], text: string): void => {
   const xPath = localXPath.map(x => `/${nsTag(x)}`).join('')
-  ;(castToArray(document.get(xPath)!)[0] as any).cdata(text)
+  maybeHead(document.get(xPath)! as any).cdata(text)
 }
 
 const TAX_FILING_DEADLINE_OFFSET = 30

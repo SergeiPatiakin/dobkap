@@ -11,7 +11,7 @@ export const map2 = (f: (x: bigint, y: bigint) => bigint) => (a: RsdAmount, b: R
 })
 
 export const fromCurrency = (exchangeRate: number, currencyAmount: number) => {
-  const cents = 100 * exchangeRate * currencyAmount
+  const cents = Math.round(100 * exchangeRate * currencyAmount)
   return {cents: BigInt(cents)}
 }
 

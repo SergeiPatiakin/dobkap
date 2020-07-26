@@ -1,11 +1,12 @@
 import * as t from 'io-ts'
 import * as O from 'fp-ts/lib/Option'
 import * as E from 'fp-ts/lib/Either'
-import { DayStringCodec, getValidationErrorMessages } from './data-types'
+import { DayStringCodec } from './data-types'
 import { pipe, flow } from 'fp-ts/lib/function'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
+import { failure as reportFailure } from 'io-ts/lib/PathReporter'
 
 export const ConfCodec = t.type({
   jmbg: t.string,
@@ -27,8 +28,9 @@ export const getConf = (confFilePath: O.Option<string>): E.Either<string[], Conf
     O.chain(tryPath)(confFilePath),
     O.alt(() => tryPath('dobkap.conf')),
     O.alt(() => tryPath(path.join(os.homedir(), 'dobkap.conf'))),
+    x => {console.log(x); return x},
     E.fromOption(() => ['Cannot find conf file']),
-    E.chain(fileContents => E.parseJSON(fileContents, (e: any) => ['Failed to parse JSON', e.toString()])),
-    E.chain(flow(ConfCodec.decode, E.mapLeft(getValidationErrorMessages)))
+    E.chain(fileContents => E.parseJSON(fileContents, (e: any) => ['Failed to parse configuration JSON', e.toString()])),
+    E.chain(flow(ConfCodec.decode, E.mapLeft(x => ['Invalid configuration'].concat(reportFailure(x))))),
   )
 }
