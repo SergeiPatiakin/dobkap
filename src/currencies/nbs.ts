@@ -1,6 +1,6 @@
 import got from 'got'
 import { NaiveDate, CurrencyCode } from '../data-types'
-import xmldoc from 'xmldoc'
+import libxml, {Element} from 'libxmljs'
 
 const nbsCurrencyCodeMapping: Map<string, CurrencyCode> = new Map([
   ['EUR', CurrencyCode.EUR],
@@ -37,11 +37,13 @@ export const nbsCurrencyService = async (day: NaiveDate, currencyCode: CurrencyC
     },
     form,
   })
-  const document = new xmldoc.XmlDocument(result.body)
-  const nbsExchangeRates = document.childrenNamed('Item')!.map(item => ({
-    nbsCurrencyCode: item.childNamed('Currency')!.val,
-    scaleFactor: Number(item.childNamed('Unit')!.val),
-    scaledExchangeRate: Number(item.childNamed('Middle_Rate')!.val),
+  const document = libxml.parseXmlString(result.body)
+  const children = document!.root()!.childNodes() as Element[];
+
+  const nbsExchangeRates = children.filter(c => c.name() === 'Item').map(c => ({
+    nbsCurrencyCode: (c.childNodes() as Element[]).filter(x => x.name() === 'Currency')[0].child(0)!.toString(),
+    scaleFactor: Number((c.childNodes() as Element[]).filter(x => x.name() === 'Unit')[0].child(0)!.toString()),
+    scaledExchangeRate: Number((c.childNodes() as Element[]).filter(x => x.name() === 'Middle_Rate')[0].child(0)!.toString()),
   }))
   const exchangeRates = nbsExchangeRates.map(
     ({nbsCurrencyCode, scaleFactor, scaledExchangeRate}) => ({
