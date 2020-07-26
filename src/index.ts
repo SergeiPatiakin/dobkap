@@ -2,7 +2,7 @@ import { Argv } from 'yargs'
 import * as O from 'fp-ts/lib/Option'
 import * as E from 'fp-ts/lib/Either'
 import { getConf } from './conf'
-import { DividendInfo, getDividendIncomeInfo } from './dividend'
+import { DividendInfo, getDividendIncomeInfo, DividendIncomeInfo } from './dividend'
 import { trivialImporter } from './importers/trivial'
 import { currencyService } from './currencies'
 import { toNaiveDate } from './dates'
@@ -12,6 +12,7 @@ import { OpoData, getFilingDeadline, fillOpoForm } from './eporezi'
 import { createHolidayService } from './holidays'
 import fs from 'fs'
 import path from 'path'
+import { ibkrImporter } from './importers/ibkr'
 const yargs = require('yargs')
 
 // DobKapProcessArgs is the data structure we receive from yargs
@@ -41,37 +42,42 @@ const processImport = async (args: DobKapImportArgs) => {
     E.fold(e => {throw new Error(e.join('; '))}, identity)
   )
   
-  let dividendInfo: DividendInfo
+  let dividendInfos: DividendInfo[]
   if (normArgs.importer === 'trivial'){
-    dividendInfo = await trivialImporter(normArgs.inputFilePath)
+    dividendInfos = await trivialImporter(normArgs.inputFilePath)
+  } else if (normArgs.importer === 'ibkr'){
+    dividendInfos = await ibkrImporter(normArgs.inputFilePath)
   } else {
     throw new Error('Unknown importer')
   }
-  const dividendIncomeInfo = await getDividendIncomeInfo(currencyService, dividendInfo)
-  
-  const holidays = conf.holidays.map(h => toNaiveDate(h))
-  const holidayRange = {start: toNaiveDate(conf.holidayRangeStart), end: toNaiveDate(conf.holidayRangeEnd)}
-  const holidayService = createHolidayService(holidays, holidayRange)
 
-  const filingDeadline = getFilingDeadline(holidayService, dividendIncomeInfo.paymentDate)
+  for (const [idx, dividendInfo] of dividendInfos.entries()){
+    const dividendIncomeInfo = await getDividendIncomeInfo(currencyService, dividendInfo)
+    
+    const holidays = conf.holidays.map(h => toNaiveDate(h))
+    const holidayRange = {start: toNaiveDate(conf.holidayRangeStart), end: toNaiveDate(conf.holidayRangeEnd)}
+    const holidayService = createHolidayService(holidays, holidayRange)
 
-  const opoData: OpoData = {
-    jmbg: conf.jmbg,
-    fullName: conf.fullName,
-    streetAddress: conf.streetAddress,
-    filerJmbg: conf.jmbg,
-    phoneNumber: conf.phoneNumber,
-    opstinaCode: conf.opstinaCode,
-    email: conf.email,
-    realizationMethod: conf.realizationMethod,
-    filingDeadline,
-    dividendIncomeInfo,
+    const filingDeadline = getFilingDeadline(holidayService, dividendIncomeInfo.paymentDate)
+
+    const opoData: OpoData = {
+      jmbg: conf.jmbg,
+      fullName: conf.fullName,
+      streetAddress: conf.streetAddress,
+      filerJmbg: conf.jmbg,
+      phoneNumber: conf.phoneNumber,
+      opstinaCode: conf.opstinaCode,
+      email: conf.email,
+      realizationMethod: conf.realizationMethod,
+      filingDeadline,
+      dividendIncomeInfo,
+    }
+    const opoForm = fillOpoForm(opoData)
+    const inputFileName = path.parse(normArgs.inputFilePath).name
+    const outputFileName = inputFileName + (dividendInfos.length > 1 ? `.out.${idx + 1}.xml` : '.out.xml')
+    const outputFilePath = path.join(normArgs.outputDirPath, outputFileName)
+    fs.writeFileSync(outputFilePath, opoForm.toString())
   }
-  const opoForm = fillOpoForm(opoData)
-  const inputFileName = path.parse(normArgs.inputFilePath).name
-  const outputFileName = inputFileName + '.out.xml'
-  const outputFilePath = path.join(normArgs.outputDirPath, outputFileName)
-  fs.writeFileSync(outputFilePath, opoForm.toString())
 }
 
 interface DobKapCheckRateArgs {
@@ -81,7 +87,7 @@ interface DobKapCheckRateArgs {
 
 const processCheckRate = async (args: DobKapCheckRateArgs) => {
   const rate = await currencyService(toNaiveDate(args.day), args.currency as any)
-  console.log(rate)
+  console.info(rate)
 }
 
 yargs.scriptName('dobkap')

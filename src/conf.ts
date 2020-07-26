@@ -28,7 +28,6 @@ export const getConf = (confFilePath: O.Option<string>): E.Either<string[], Conf
     O.chain(tryPath)(confFilePath),
     O.alt(() => tryPath('dobkap.conf')),
     O.alt(() => tryPath(path.join(os.homedir(), 'dobkap.conf'))),
-    x => {console.log(x); return x},
     E.fromOption(() => ['Cannot find conf file']),
     E.chain(fileContents => E.parseJSON(fileContents, (e: any) => ['Failed to parse configuration JSON', e.toString()])),
     E.chain(flow(ConfCodec.decode, E.mapLeft(x => ['Invalid configuration'].concat(reportFailure(x))))),
