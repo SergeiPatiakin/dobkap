@@ -4,7 +4,7 @@
   "description": "",
   "main": "lib/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp src/eporezi/*.xml lib/eporezi",
     "clean": "rm -r lib",
     "test": "jest --runInBand --forceExit --detectOpenHandles --verbose false"
   },
