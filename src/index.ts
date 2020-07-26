@@ -1,10 +1,16 @@
 import { Argv } from 'yargs'
 import * as O from 'fp-ts/lib/Option'
+import * as E from 'fp-ts/lib/Either'
 import { getConf } from './conf'
 import { DividendInfo, getDividendIncomeInfo } from './dividend'
 import { trivialImporter } from './importers/trivial'
 import { currencyService } from './currencies'
 import { toNaiveDate } from './dates'
+import { pipe } from 'fp-ts/lib/pipeable'
+import { identity } from 'fp-ts/lib/function'
+import { OpoData, getFilingDeadline, fillOpoForm } from './eporezi'
+import { createHolidayService } from './holidays'
+import fs from 'fs'
 const yargs = require('yargs')
 
 // DobKapProcessArgs is the data structure we receive from yargs
@@ -18,7 +24,7 @@ interface DobKapImportArgs {
 interface DobKapNormalizedImportArgs {
   inputFilePath: string
   importer: string
-  outputDirPath: string
+  outputFilePath: string
   confFilePath: O.Option<string>
 }
 
@@ -26,10 +32,13 @@ const processImport = async (args: DobKapImportArgs) => {
   const normArgs: DobKapNormalizedImportArgs = {
     inputFilePath: args.input,
     importer: args.importer || 'trivial',
-    outputDirPath: args.output || process.cwd(),
+    outputFilePath: args.output || process.cwd(),
     confFilePath: O.fromNullable(args.conf),
   }
-  const conf = getConf(normArgs.confFilePath)
+  const conf = pipe(
+    getConf(normArgs.confFilePath),
+    E.fold(() => {throw new Error('Conf not found')}, identity)
+  )
   
   let dividendInfo: DividendInfo
   if (normArgs.importer === 'trivial'){
@@ -37,8 +46,28 @@ const processImport = async (args: DobKapImportArgs) => {
   } else {
     throw new Error('Unknown importer')
   }
-  const dividendIncomeInfo = getDividendIncomeInfo(currencyService, dividendInfo)
-  console.log({dividendInfo, dividendIncomeInfo})
+  const dividendIncomeInfo = await getDividendIncomeInfo(currencyService, dividendInfo)
+  
+  const holidays = conf.holidays.map(h => toNaiveDate(h))
+  const holidayRange = {start: toNaiveDate(conf.holidayRangeStart), end: toNaiveDate(conf.holidayRangeEnd)}
+  const holidayService = createHolidayService(holidays, holidayRange)
+
+  const filingDeadline = getFilingDeadline(holidayService, dividendIncomeInfo.paymentDate)
+
+  const opoData: OpoData = {
+    jmbg: conf.jmbg,
+    fullName: conf.fullName,
+    streetAddress: conf.streetAddress,
+    filerJmbg: conf.jmbg,
+    phoneNumber: conf.phoneNumber,
+    opstinaCode: conf.opstinaCode,
+    email: conf.email,
+    realizationMethod: conf.realizationMethod,
+    filingDeadline,
+    dividendIncomeInfo,
+  }
+  const opoForm = fillOpoForm(opoData)
+  fs.writeFileSync(normArgs.outputFilePath, opoForm.toString())
 }
 
 interface DobKapCheckRateArgs {
@@ -62,7 +91,7 @@ yargs.scriptName('dobkap')
       alias: 'm'
     })
     .option('output', {
-      describe: 'Path to output directory',
+      describe: 'Path to output file',
       alias: 'o'
     })
     .option('conf', {

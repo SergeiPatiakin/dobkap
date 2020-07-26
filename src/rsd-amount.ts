@@ -24,3 +24,17 @@ export const subtract = map2((x: bigint, y: bigint): bigint => x - y)
 export const zero = ({
   cents: BigInt(0),
 })
+
+export const gt = (a: RsdAmount, b: RsdAmount) => a.cents > b.cents
+export const lt = (a: RsdAmount, b: RsdAmount) => a.cents < b.cents
+
+export const formatRsdAmount = (a: RsdAmount) => {
+  const isNegative = lt(a, zero)
+  const abs = map(x => x > 0 ? x : -x)(a)
+  const positiveCentsString = abs.cents.toString().padStart(3, '0')
+  const positiveDinarsString =
+    positiveCentsString.substring(0, positiveCentsString.length - 2)
+    + '.'
+    + positiveCentsString.substring(positiveCentsString.length - 2)
+  return (isNegative ? '-' : '') + positiveDinarsString
+}

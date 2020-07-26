@@ -8,10 +8,10 @@ import fs from 'fs'
 export const ConfCodec = t.type({
   jmbg: t.string,
   fullName: t.string, // TODO: cyrillic?
-  address: t.string,
+  streetAddress: t.string,
   phoneNumber: t.string, // TODO: regex validation?
   email: t.string,
-  opstina: t.string,
+  opstinaCode: t.string,
   realizationMethod: t.string,
   holidayRangeStart: DayStringCodec,
   holidayRangeEnd: DayStringCodec,

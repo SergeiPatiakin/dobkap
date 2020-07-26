@@ -1,5 +1,5 @@
 import { toNaiveDate, formatNaiveDate } from "../src/dates"
-import { workingDayAfter } from "../src/holidays"
+import { createHolidayService } from "../src/holidays"
 
 describe('workingDayAfter', () => {
   const holidays = [
@@ -11,18 +11,18 @@ describe('workingDayAfter', () => {
     end: toNaiveDate('2020-12-31'),
   }
   it('weekday, no adjustment needed', () => {
-    expect(formatNaiveDate(workingDayAfter(holidays, holidayRange)(toNaiveDate('2020-07-06'), 7))).toBe('2020-07-13')
+    expect(formatNaiveDate(createHolidayService(holidays, holidayRange).workingDayAfter(toNaiveDate('2020-07-06'), 7))).toBe('2020-07-13')
   })
   it('weekend adjustment', () => {
-    expect(formatNaiveDate(workingDayAfter(holidays, holidayRange)(toNaiveDate('2020-07-05'), 7))).toBe('2020-07-13')
+    expect(formatNaiveDate(createHolidayService(holidays, holidayRange).workingDayAfter(toNaiveDate('2020-07-05'), 7))).toBe('2020-07-13')
   })
   it('weekend and holiday adjustment', () => {
-    expect(formatNaiveDate(workingDayAfter(holidays, holidayRange)(toNaiveDate('2020-07-19'), 7))).toBe('2020-07-29')
+    expect(formatNaiveDate(createHolidayService(holidays, holidayRange).workingDayAfter(toNaiveDate('2020-07-19'), 7))).toBe('2020-07-29')
   })
   it('negative: past bound', () => {
-    expect(() => workingDayAfter(holidays, holidayRange)(toNaiveDate('2019-07-19'), 7)).toThrow()
+    expect(() => createHolidayService(holidays, holidayRange).workingDayAfter(toNaiveDate('2019-07-19'), 7)).toThrow()
   })
   it('negative: future bound', () => {
-    expect(() => workingDayAfter(holidays, holidayRange)(toNaiveDate('2020-12-25'), 7)).toThrow()
+    expect(() => createHolidayService(holidays, holidayRange).workingDayAfter(toNaiveDate('2020-12-25'), 7)).toThrow()
   })
 })

@@ -6,14 +6,14 @@ describe('fillOpoForm', () => {
   it('basic', () => {
     const result = fillOpoForm({
       fullName: 'Jован Jовановић',
-      filingDeadline: toNaiveDate('2020-08-25'),
       streetAddress: 'Terazije 1/1',
-      phone: '0611111111',
+      phoneNumber: '0611111111',
       email: 'jovan@example.com',
       opstinaCode: '016',
       jmbg: '1234567890123',
       filerJmbg: '1234567890123',
       realizationMethod: 'Isplata na brokerski racun',
+      filingDeadline: toNaiveDate('2020-08-16'),
       dividendIncomeInfo: {
         payingEntity: 'BMW',
         grossDividend: fromCurrency(117, 100),
