@@ -11,6 +11,7 @@ import { identity } from 'fp-ts/lib/function'
 import { OpoData, getFilingDeadline, fillOpoForm } from './eporezi'
 import { createHolidayService } from './holidays'
 import fs from 'fs'
+import path from 'path'
 const yargs = require('yargs')
 
 // DobKapProcessArgs is the data structure we receive from yargs
@@ -24,7 +25,7 @@ interface DobKapImportArgs {
 interface DobKapNormalizedImportArgs {
   inputFilePath: string
   importer: string
-  outputFilePath: string
+  outputDirPath: string
   confFilePath: O.Option<string>
 }
 
@@ -32,7 +33,7 @@ const processImport = async (args: DobKapImportArgs) => {
   const normArgs: DobKapNormalizedImportArgs = {
     inputFilePath: args.input,
     importer: args.importer || 'trivial',
-    outputFilePath: args.output || process.cwd(),
+    outputDirPath: args.output || process.cwd(),
     confFilePath: O.fromNullable(args.conf),
   }
   const conf = pipe(
@@ -67,7 +68,10 @@ const processImport = async (args: DobKapImportArgs) => {
     dividendIncomeInfo,
   }
   const opoForm = fillOpoForm(opoData)
-  fs.writeFileSync(normArgs.outputFilePath, opoForm.toString())
+  const inputFileName = path.parse(normArgs.inputFilePath).name
+  const outputFileName = inputFileName + '.out.xml'
+  const outputFilePath = path.join(normArgs.outputDirPath, outputFileName)
+  fs.writeFileSync(outputFilePath, opoForm.toString())
 }
 
 interface DobKapCheckRateArgs {
