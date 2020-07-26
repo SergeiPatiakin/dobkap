@@ -4,6 +4,7 @@ import * as A from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/lib/Option'
 
 export type Integer = number
+export type UnsignedInteger = number
 
 export type NaiveDate = Moment
 

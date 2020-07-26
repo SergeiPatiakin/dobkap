@@ -1,0 +1,20 @@
+import { NaiveDate, UnsignedInteger } from "./data-types";
+import { formatNaiveDate } from "./dates";
+
+export const workingDayAfter = (holidays: NaiveDate[], holidayRange: {start: NaiveDate, end: NaiveDate}) => {
+  const holidaysSet = new Set(holidays.map(d => formatNaiveDate(d)))
+  const isWorkingDay = (day: NaiveDate) => ![6, 7].includes(day.isoWeekday()) && !holidaysSet.has(formatNaiveDate(day))
+  return (startDay: NaiveDate, offset: UnsignedInteger): NaiveDate => {
+    if (startDay.isBefore(holidayRange.start)){
+      throw new Error('Holiday data coverage into the past is not sufficient')
+    }
+    let candidate = startDay.clone().add(offset, 'days')
+    while (!isWorkingDay(candidate)) {
+      candidate.add(1, 'day')
+    }
+    if (candidate.isAfter(holidayRange.end)){
+      throw new Error('Holiday data coverage into the future is not sufficient')
+    }
+    return candidate
+  }
+}
