@@ -1,12 +1,9 @@
 import { getDividendIncomeInfo } from '../src/dividend'
-import { CurrencyServiceRepository, CurrencyCode } from '../src/currencies'
 import moment from 'moment'
+import { CurrencyService } from '../src/currencies'
+import { CurrencyCode } from '../src/data-types'
 
-const mockCurrencyServiceRepo: CurrencyServiceRepository = {
-  EUR: async () => 120,
-  GBP: async () => 140,
-  USD: async () => 110,
-}
+const mockCurrencyServiceRepo: CurrencyService = async () => 120
 
 describe('getDividendIncomeInfo', () => {
   it('some tax payable', async () => {
@@ -15,9 +12,10 @@ describe('getDividendIncomeInfo', () => {
       mockCurrencyServiceRepo,
       {
         payingEntity: 'BMW',
-        currencyDividendAmount: 200.0,
-        currencyCode: CurrencyCode.EUR,
-        currencyWithholdingTaxAmount: 20.0,
+        dividendCurrencyCode: CurrencyCode.EUR,
+        dividendCurrencyAmount: 200.0,
+        whtCurrencyCode: CurrencyCode.EUR,
+        whtCurrencyAmount: 20.0,
         paymentDate: mockDate,
       }
     )
@@ -36,9 +34,10 @@ describe('getDividendIncomeInfo', () => {
       mockCurrencyServiceRepo,
       {
         payingEntity: 'BMW',
-        currencyDividendAmount: 200.0,
-        currencyCode: CurrencyCode.EUR,
-        currencyWithholdingTaxAmount: 52.0,
+        dividendCurrencyCode: CurrencyCode.EUR,
+        dividendCurrencyAmount: 200.0,
+        whtCurrencyCode: CurrencyCode.EUR,
+        whtCurrencyAmount: 52.0,
         paymentDate: mockDate,
       }
     )
