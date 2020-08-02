@@ -17,4 +17,8 @@ export const currencyService = async (day: NaiveDate, currencyCode: CurrencyCode
   }
 }
 
+export const clearCache = async () => {
+  await cache.clear()
+}
+
 export type CurrencyService = typeof currencyService

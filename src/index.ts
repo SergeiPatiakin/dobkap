@@ -4,7 +4,7 @@ import * as E from 'fp-ts/lib/Either'
 import { getConf } from './conf'
 import { DividendInfo, getDividendIncomeInfo, DividendIncomeInfo } from './dividend'
 import { trivialImporter } from './importers/trivial'
-import { currencyService } from './currencies'
+import { currencyService, clearCache } from './currencies'
 import { toNaiveDate } from './dates'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { identity } from 'fp-ts/lib/function'
@@ -90,6 +90,10 @@ const processCheckRate = async (args: DobKapCheckRateArgs) => {
   console.info(rate)
 }
 
+const processClearCache = async () => {
+  await clearCache()
+}
+
 yargs.scriptName('dobkap')
   .command('import', 'Import dividend files', (yargs: Argv) => {
     yargs.option('input', {
@@ -124,6 +128,9 @@ yargs.scriptName('dobkap')
     .demandOption(['day', 'currency'])
   }, (args: any) => {
     processCheckRate(args)
+  })
+  .command('clearcache', 'Clear rate cache', () => {
+    processClearCache()
   })
   .strict()
   .argv
