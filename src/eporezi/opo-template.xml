@@ -28,6 +28,7 @@
                 <ns1:BrutoPrihod></ns1:BrutoPrihod>
                 <ns1:OsnovicaZaPorez></ns1:OsnovicaZaPorez>
                 <ns1:ObracunatiPorez></ns1:ObracunatiPorez>
+                <ns1:PorezPlacenDrugojDrzavi></ns1:PorezPlacenDrugojDrzavi>
                 <ns1:PorezZaUplatu></ns1:PorezZaUplatu>
             </ns1:PodaciOVrstamaPrihoda>
     </ns1:DeklarisaniPodaciOVrstamaPrihoda>

@@ -63,6 +63,7 @@ export const fillOpoForm = (data: OpoData): Document => {
   setText(document, ['PodaciPoreskeDeklaracije', 'DeklarisaniPodaciOVrstamaPrihoda', 'PodaciOVrstamaPrihoda', 'BrutoPrihod'], formatRsdAmount(data.dividendIncomeInfo.grossDividend))
   setText(document, ['PodaciPoreskeDeklaracije', 'DeklarisaniPodaciOVrstamaPrihoda', 'PodaciOVrstamaPrihoda', 'OsnovicaZaPorez'], formatRsdAmount(data.dividendIncomeInfo.grossDividend))
   setText(document, ['PodaciPoreskeDeklaracije', 'DeklarisaniPodaciOVrstamaPrihoda', 'PodaciOVrstamaPrihoda', 'ObracunatiPorez'], formatRsdAmount(data.dividendIncomeInfo.grossTaxPayable))
+  setText(document, ['PodaciPoreskeDeklaracije', 'DeklarisaniPodaciOVrstamaPrihoda', 'PodaciOVrstamaPrihoda', 'PorezPlacenDrugojDrzavi'], formatRsdAmount(data.dividendIncomeInfo.taxPaidAbroad))
   setText(document, ['PodaciPoreskeDeklaracije', 'DeklarisaniPodaciOVrstamaPrihoda', 'PodaciOVrstamaPrihoda', 'PorezZaUplatu'], formatRsdAmount(data.dividendIncomeInfo.taxPayable))
   // TODO: tax paid abroad needed in this section?
 
