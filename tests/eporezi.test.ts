@@ -23,6 +23,6 @@ describe('fillOpoForm', () => {
         paymentDate: toNaiveDate('2020-07-16'),
       },
     })
-    console.log(result.toString())
+    expect(result).toBeTruthy()
   })
 })
