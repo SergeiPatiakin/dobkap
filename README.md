@@ -1,5 +1,3 @@
-# Dobkap
-## Description
 Dobkap is a tool for automating PP-OPO dividend tax filings in Serbia. It can import dividend payout data from an InteractiveBrokers activity statement and produce PP-OPO forms in ePorezi XML format.
 ![Screen Shot 2020-08-03 at 21 18 54](https://user-images.githubusercontent.com/22116935/89218804-fa725e80-d5ce-11ea-871e-3e69e86f5894.png)
 
