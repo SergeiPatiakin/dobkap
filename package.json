@@ -8,7 +8,9 @@
     "clean": "rm -r lib",
     "test": "jest --runInBand --forceExit --detectOpenHandles --verbose false"
   },
-  "bin" : { "dobkap" : "./lib/index.js" },
+  "bin": {
+    "dobkap": "./lib/index.js"
+  },
   "author": "Sergei Patiakin",
   "license": "ISC",
   "devDependencies": {
