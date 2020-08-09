@@ -8,18 +8,23 @@ import path from 'path'
 import os from 'os'
 import { failure as reportFailure } from 'io-ts/lib/PathReporter'
 
-export const ConfCodec = t.type({
-  jmbg: t.string,
-  fullName: t.string, // TODO: cyrillic?
-  streetAddress: t.string,
-  phoneNumber: t.string, // TODO: regex validation?
-  email: t.string,
-  opstinaCode: t.string,
-  realizationMethod: t.string,
-  holidayRangeStart: DayStringCodec,
-  holidayRangeEnd: DayStringCodec,
-  holidays: t.array(DayStringCodec),
-})
+export const ConfCodec = t.intersection([
+  t.type({
+    jmbg: t.string,
+    fullName: t.string, // TODO: cyrillic?
+    streetAddress: t.string,
+    phoneNumber: t.string, // TODO: regex validation?
+    email: t.string,
+    opstinaCode: t.string,
+    realizationMethod: t.string,
+    holidayRangeStart: DayStringCodec,
+    holidayRangeEnd: DayStringCodec,
+    holidays: t.array(DayStringCodec),
+  }),
+  t.partial({
+    mexicoBdmToken: t.string,
+  })
+])
 export type Conf = t.TypeOf<typeof ConfCodec>
 
 export const getConf = (confFilePath: O.Option<string>): E.Either<string[], Conf> => {

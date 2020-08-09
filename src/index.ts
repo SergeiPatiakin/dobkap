@@ -4,7 +4,7 @@ import * as E from 'fp-ts/lib/Either'
 import { getConf } from './conf'
 import { DividendInfo, getDividendIncomeInfo, DividendIncomeInfo } from './dividend'
 import { trivialImporter } from './importers/trivial'
-import { currencyService, clearCache } from './currencies'
+import { currencyServiceFactory, clearCache } from './currencies'
 import { toNaiveDate } from './dates'
 import { pipe } from 'fp-ts/lib/pipeable'
 import { identity } from 'fp-ts/lib/function'
@@ -51,6 +51,9 @@ const processImport = async (args: DobKapImportArgs) => {
     throw new Error('Unknown importer')
   }
 
+  const apiTokens = {mexicoBdmToken: conf.mexicoBdmToken}
+  const currencyService = currencyServiceFactory(apiTokens)
+
   for (const [idx, dividendInfo] of dividendInfos.entries()){
     const dividendIncomeInfo = await getDividendIncomeInfo(currencyService, dividendInfo)
     
@@ -83,9 +86,18 @@ const processImport = async (args: DobKapImportArgs) => {
 interface DobKapCheckRateArgs {
   day: string
   currency: string
+  confFilePath?: string
 }
 
 const processCheckRate = async (args: DobKapCheckRateArgs) => {
+  const conf = pipe(
+    getConf(O.fromNullable(args.confFilePath)),
+    E.fold(e => {throw new Error(e.join('; '))}, identity)
+  )
+  const apiTokens = {
+    mexicoBdmToken: conf.mexicoBdmToken
+  }
+  const currencyService = currencyServiceFactory(apiTokens)
   const rate = await currencyService(toNaiveDate(args.day), args.currency as any)
   console.info(rate)
 }
@@ -121,9 +133,13 @@ yargs.scriptName('dobkap')
       describe: 'Day in YYYY-MM-DD format',
       alias: 'd',
     })
+    .option('conf', {
+      describe: 'Path to conf file',
+      alias: 'c'
+    })
     .option('currency', {
       describe: 'Currency code',
-      alias: 'c'
+      alias: 'k'
     })
     .demandOption(['day', 'currency'])
   }, (args: any) => {

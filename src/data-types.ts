@@ -14,4 +14,5 @@ export enum CurrencyCode {
   GBP = 'GBP',
   USD = 'USD',
   SGD = 'SGD',
+  MXN = 'MXN',
 }

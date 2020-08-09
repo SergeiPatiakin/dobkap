@@ -3,7 +3,7 @@ Dobkap is a tool for automating PP-OPO dividend tax filings in Serbia. It can im
 
 ## Features
 - Supports Withholding Tax deductions
-- Supports EUR, GBP and USD trading currencies, with more to come. Historic exchange rates are pulled from the National Bank of Serbia.
+- Supports multiple trading currencies: EUR, GBP, USD, SGD, MXN. Historic exchange rates are pulled from Serbia NBS, Singapore MAS and Mexico BDM.
 
 ## Installation
 ```
@@ -42,7 +42,8 @@ npm i -g dobkap
     "2020-11-11"
   ],
   "holidayRangeStart": "2020-01-01",
-  "holidayRangeEnd": "2020-12-31"
+  "holidayRangeEnd": "2020-12-31",
+  "mexicoBdmToken": "123456783a43236a9ec55317c175095617fb723e4982c315efd7090922f329be"
 }
 ```
 
