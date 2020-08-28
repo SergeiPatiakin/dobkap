@@ -53,7 +53,14 @@ export const ibkrImporter = async (inputFile: string): Promise<DividendInfo[]> =
       }
       const dividendInfoKey = toDividendKey(paymentDate, payingEntity, payingEntityIsin)
       if (dividendInfosMap.has(dividendInfoKey)){
-        throw new Error('Duplicate dividends found')
+        const existingDividendInfo = dividendInfosMap.get(dividendInfoKey)!
+        if (existingDividendInfo.dividendCurrencyCode !== dividendInfo.dividendCurrencyCode){
+          throw new Error('Duplicate dividends found with different currencies')
+        }
+        existingDividendInfo.dividendCurrencyAmount += dividendInfo.dividendCurrencyAmount
+        if (existingDividendInfo.whtCurrencyCode !== dividendInfo.whtCurrencyCode){
+          throw new Error('Duplicate dividends found with different withholding tax currencies')
+        }
       } else {
         dividendInfosMap.set(dividendInfoKey, dividendInfo)
       }
