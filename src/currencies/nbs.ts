@@ -17,17 +17,17 @@ export const nbsCurrencyService = async (day: NaiveDate, currencyCode: CurrencyC
   const jessionidRegex = /jsessionid=([0-9A-F]+)/g // MUTABLE!!!
   const jsessionid = jessionidRegex.exec(prelimResult.body)![1]
 
-  const viewStateRegex = /id="javax.faces.ViewState" value="([-0-9A-F\:]+)"/g // MUTABLE!!!
+  const viewStateRegex = /id="j_id1:javax.faces.ViewState:0" value="([-0-9A-F\:]+)"/g // MUTABLE!!!
   const viewState = viewStateRegex.exec(prelimResult.body)![1]
   
   const form = {
     'index': 'index',
     'index:brKursneListe': '',
-    'index:year': day.format('YYYY'),
+    'index:yearInner': day.format('YYYY'),
     'index:inputCalendar1': day.format('DD/MM/YYYY'),
-    'index:vrsta': '3',
-    'index:prikaz': '3',
-    'index:buttonShow': 'Прикажи',
+    'index:vrstaInner': '3',
+    'index:prikazInner': '3',
+    'index:buttonShow': '',
     'javax.faces.ViewState': viewState,
   }
 
