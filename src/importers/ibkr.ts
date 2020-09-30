@@ -82,7 +82,7 @@ export const ibkrImporter = async (inputFile: string): Promise<DividendInfo[]> =
         const row = fileContents[whtRowIndex]
         const whtCurrencyCode: CurrencyCode = row[2] as CurrencyCode
         const paymentDate: NaiveDate = toNaiveDate(row[3])
-        const parsedEntityName = row[4].match(/^([0-9A-Za-z]+)\(([0-9A-Za-z]+)\)/)!
+        const parsedEntityName = row[4].match(/^([0-9A-Za-z\.]+)\(([0-9A-Za-z]+)\)/)!
         const payingEntity = parsedEntityName[1]
         const payingEntityIsin = parsedEntityName[2]
         const whtCurrencyAmount = -parseFloat(row[5])
