@@ -24,7 +24,6 @@
   "dependencies": {
     "@types/got": "^9.6.11",
     "@types/libxmljs": "^0.18.6",
-    "@types/moment": "^2.13.0",
     "@types/node": "^14.0.24",
     "@types/yargs": "^15.0.5",
     "async-disk-cache": "^2.1.0",
