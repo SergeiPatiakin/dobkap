@@ -1,17 +1,16 @@
 {
   "name": "dobkap",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc && cp src/eporezi/*.xml lib/eporezi",
     "clean": "rm -rf lib",
     "test": "jest --runInBand --forceExit --detectOpenHandles --verbose false",
-    "inject-shebang": "echo '#!/usr/bin/env node' >> indexWithShebang.js && cat lib/index.js >> indexWithShebang.js && mv indexWithShebang.js lib/index.js",
-    "prepublish": "npm run clean && npm run build && npm run inject-shebang"
+    "prepublish": "npm run clean && npm run build"
   },
   "bin": {
-    "dobkap": "./lib/index.js"
+    "dobkap": "./bin/dobkap"
   },
   "author": "Sergei Patiakin",
   "license": "ISC",
