@@ -78,7 +78,7 @@ export const ibkrImporter = async (inputFile: string): Promise<DividendInfo[]> =
     
     if (whtSectionStartIndex !== -1){
       const isWhtRow = (row: string[]) => row[0] === 'Withholding Tax' && row[1] === 'Data' && row[2] !== 'Total'
-      for (let whtRowIndex = whtSectionStartIndex; isWhtRow(fileContents[whtRowIndex]); whtRowIndex++){
+      for (let whtRowIndex = whtSectionStartIndex + 1; isWhtRow(fileContents[whtRowIndex]); whtRowIndex++){
         const row = fileContents[whtRowIndex]
         const whtCurrencyCode: CurrencyCode = row[2] as CurrencyCode
         const paymentDate: NaiveDate = toNaiveDate(row[3])
