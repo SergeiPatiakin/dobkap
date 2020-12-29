@@ -18,6 +18,8 @@ const parseCsvFile = async (filePath: string): Promise<string[][]> => {
   })
 }
 
+const ENTITY_NAME_REGEX = /^([0-9A-Za-z\.]+)\(([0-9A-Za-z]+)\)/
+
 export const ibkrImporter = async (inputFile: string): Promise<DividendInfo[]> => {
   const fileContents = await parseCsvFile(inputFile)
   
@@ -39,7 +41,10 @@ export const ibkrImporter = async (inputFile: string): Promise<DividendInfo[]> =
       const row = fileContents[dividendRowIndex]
       const dividendCurrencyCode: CurrencyCode = row[2] as CurrencyCode
       const paymentDate: NaiveDate = toNaiveDate(row[3]) // TODO: decode to day string first?
-      const parsedEntityName = row[4].match(/^([0-9A-Za-z]+)\(([0-9A-Za-z]+)\)/)!
+      const parsedEntityName = row[4].match(ENTITY_NAME_REGEX)
+      if (!parsedEntityName) {
+        throw new Error(`Could not parse entity name for dividend entry: ${row[4]}`)
+      }
       const payingEntity = parsedEntityName[1]
       const payingEntityIsin = parsedEntityName[2]
       const dividendCurrencyAmount = parseFloat(row[5])
@@ -82,7 +87,10 @@ export const ibkrImporter = async (inputFile: string): Promise<DividendInfo[]> =
         const row = fileContents[whtRowIndex]
         const whtCurrencyCode: CurrencyCode = row[2] as CurrencyCode
         const paymentDate: NaiveDate = toNaiveDate(row[3])
-        const parsedEntityName = row[4].match(/^([0-9A-Za-z\.]+)\(([0-9A-Za-z]+)\)/)!
+        const parsedEntityName = row[4].match(ENTITY_NAME_REGEX)
+        if (!parsedEntityName) {
+          throw new Error(`Could not parse entity name for WHT entry: ${row[4]}`)
+        }
         const payingEntity = parsedEntityName[1]
         const payingEntityIsin = parsedEntityName[2]
         const whtCurrencyAmount = -parseFloat(row[5])
