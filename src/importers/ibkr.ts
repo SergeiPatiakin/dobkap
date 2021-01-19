@@ -36,8 +36,12 @@ export const ibkrImporter = async (inputFile: string): Promise<DividendInfo[]> =
 
   const dividendInfosMap: Map<string, DividendInfo> = new Map()
   if (dividendSectionStartIndex !== -1){
-    const isDividendRow = (row: string[]) => row[0] === 'Dividends' && row[1] === 'Data' && row[2] !== 'Total'
-    for(let dividendRowIndex = dividendSectionStartIndex + 1; isDividendRow(fileContents[dividendRowIndex]); dividendRowIndex++){
+    const isDividendSectionRow = (row: string[]) => row[0] === 'Dividends'
+    const isDividendRow = (row: string[]) => row[0] === 'Dividends' && row[1] === 'Data' && !row[2].startsWith('Total')
+    for(let dividendRowIndex = dividendSectionStartIndex + 1; isDividendSectionRow(fileContents[dividendRowIndex]); dividendRowIndex++){
+      if (!isDividendRow(fileContents[dividendRowIndex])) {
+        continue
+      }
       const row = fileContents[dividendRowIndex]
       const dividendCurrencyCode: CurrencyCode = row[2] as CurrencyCode
       const paymentDate: NaiveDate = toNaiveDate(row[3]) // TODO: decode to day string first?
@@ -82,8 +86,12 @@ export const ibkrImporter = async (inputFile: string): Promise<DividendInfo[]> =
     )
     
     if (whtSectionStartIndex !== -1){
-      const isWhtRow = (row: string[]) => row[0] === 'Withholding Tax' && row[1] === 'Data' && row[2] !== 'Total'
-      for (let whtRowIndex = whtSectionStartIndex + 1; isWhtRow(fileContents[whtRowIndex]); whtRowIndex++){
+      const isWhtSectionRow = (row: string[]) => row[0] === 'Withholding Tax'
+      const isWhtRow = (row: string[]) => row[0] === 'Withholding Tax' && row[1] === 'Data' && !row[2].startsWith('Total')
+      for (let whtRowIndex = whtSectionStartIndex + 1; isWhtSectionRow(fileContents[whtRowIndex]); whtRowIndex++){
+        if (!isWhtRow(fileContents[whtRowIndex])){
+          continue
+        }
         const row = fileContents[whtRowIndex]
         const whtCurrencyCode: CurrencyCode = row[2] as CurrencyCode
         const paymentDate: NaiveDate = toNaiveDate(row[3])
