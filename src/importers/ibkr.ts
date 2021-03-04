@@ -18,7 +18,7 @@ const parseCsvFile = async (filePath: string): Promise<string[][]> => {
   })
 }
 
-const ENTITY_NAME_REGEX = /^([0-9A-Za-z\.]+)\(([0-9A-Za-z]+)\)/
+const ENTITY_NAME_REGEX = /^([0-9A-Za-z\.]+)\s*\(([0-9A-Za-z]+)\)/
 
 export const ibkrImporter = async (inputFile: string): Promise<DividendInfo[]> => {
   const fileContents = await parseCsvFile(inputFile)
