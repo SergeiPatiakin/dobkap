@@ -1,6 +1,6 @@
 {
   "name": "dobkap",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -15,10 +15,10 @@
   "author": "Sergei Patiakin",
   "license": "ISC",
   "devDependencies": {
-    "@types/jest": "26.0.7",
-    "jest": "26.1.0",
-    "ts-jest": "26.1.3",
-    "typescript": "3.9.7"
+    "@types/jest": "^26.0.7",
+    "jest": "^26.1.0",
+    "ts-jest": "^26.1.3",
+    "typescript": "^3.9.7"
   },
   "dependencies": {
     "@types/got": "^9.6.11",

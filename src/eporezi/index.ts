@@ -43,7 +43,7 @@ const TAX_FILING_DEADLINE_OFFSET = 30
 
 export const getFilingDeadline = (holidayService: HolidayService, paymentDate: NaiveDate) => holidayService.workingDayAfter(paymentDate, TAX_FILING_DEADLINE_OFFSET)
 
-export const fillOpoForm = (data: OpoData): Document => {
+export const fillOpoForm = (data: OpoData): string => {
   const opoTemplateContents = fs.readFileSync(path.join(__dirname, 'opo-template.xml'), {encoding: 'utf8'})
   const document = libxml.parseXmlString(opoTemplateContents)
   setText(document, ['PodaciPoreskeDeklaracije', 'PodaciOPrijavi', 'ObracunskiPeriod'], data.dividendIncomeInfo.paymentDate.format('YYYY-MM'))
@@ -73,5 +73,5 @@ export const fillOpoForm = (data: OpoData): Document => {
   setText(document, ['PodaciPoreskeDeklaracije', 'Ukupno', 'PorezPlacenDrugojDrzavi'], formatRsdAmount(data.dividendIncomeInfo.taxPaidAbroad))
   setText(document, ['PodaciPoreskeDeklaracije', 'Ukupno', 'PorezZaUplatu'], formatRsdAmount(data.dividendIncomeInfo.taxPayable))
 
-  return document
+  return document.toString()
 }

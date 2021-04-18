@@ -11,7 +11,7 @@ interface ApiTokens {
   mexicoBdmToken: string
 }
 
-export const currencyServiceFactory = (apiTokens: Partial<ApiTokens>) => async (day: NaiveDate, currencyCode: CurrencyCode): Promise<number> => {
+export const createCurrencyService = (apiTokens: Partial<ApiTokens>) => async (day: NaiveDate, currencyCode: CurrencyCode): Promise<number> => {
   const cacheKey = `${formatNaiveDate(day)}-${currencyCode}`
   if (await cache.has(cacheKey)){
     const { value } = await cache.get(cacheKey)
@@ -21,7 +21,7 @@ export const currencyServiceFactory = (apiTokens: Partial<ApiTokens>) => async (
     if (currencyCode === CurrencyCode.SGD) {
       // Use USD as an intermediate currency
       const usdSgd = await singaporeMasCurrencyService(day, CurrencyCode.USD)
-      const usdRsd = await currencyServiceFactory(apiTokens)(day, CurrencyCode.USD)
+      const usdRsd = await createCurrencyService(apiTokens)(day, CurrencyCode.USD)
       value = usdRsd / usdSgd
     } else if (currencyCode === CurrencyCode.MXN) {
       if (!apiTokens.mexicoBdmToken){
@@ -29,7 +29,7 @@ export const currencyServiceFactory = (apiTokens: Partial<ApiTokens>) => async (
       }
       // Use USD as an intermediate currency
       const usdSgd = await mexicoBdmCurrencyService(apiTokens.mexicoBdmToken, day, CurrencyCode.USD)
-      const usdRsd = await currencyServiceFactory(apiTokens)(day, CurrencyCode.USD)
+      const usdRsd = await createCurrencyService(apiTokens)(day, CurrencyCode.USD)
       value = usdRsd / usdSgd
     } else {
       value = await nbsCurrencyService(day, currencyCode)

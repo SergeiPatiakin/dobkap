@@ -27,6 +27,9 @@ export const ConfCodec = t.intersection([
 ])
 export type Conf = t.TypeOf<typeof ConfCodec>
 
+/**
+ * Tries a sequence of file names
+ */
 export const getConf = (confFilePath: O.Option<string>): E.Either<string[], Conf> => {
   const tryPath = (path: string) => fs.existsSync(path) ? O.some(fs.readFileSync(path, {encoding: 'utf8'})): O.none
   return pipe(

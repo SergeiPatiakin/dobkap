@@ -20,6 +20,10 @@ const parseCsvFile = async (filePath: string): Promise<string[][]> => {
 
 const ENTITY_NAME_REGEX = /^([0-9A-Za-z\.]+)\s*\(([0-9A-Za-z]+)\)/
 
+const toDividendKey = (date: NaiveDate, entityName: string, entityIsin: string) => `${formatNaiveDate(date)}:${entityName}:${entityIsin}`
+const isDividendSectionRow = (row: string[]) => row[0] === 'Dividends' && row[1] === 'Data'
+const isDividendRow = (row: string[]) => row[0] === 'Dividends' && row[1] === 'Data' && !row[2].startsWith('Total')
+
 export const ibkrImporter = async (inputFile: string): Promise<DividendInfo[]> => {
   const fileContents = await parseCsvFile(inputFile)
   
@@ -32,12 +36,8 @@ export const ibkrImporter = async (inputFile: string): Promise<DividendInfo[]> =
     && x[5] === 'Amount'
   )
 
-  const toDividendKey = (date: NaiveDate, entityName: string, entityIsin: string) => `${formatNaiveDate(date)}:${entityName}:${entityIsin}`
-
   const dividendInfosMap: Map<string, DividendInfo> = new Map()
   if (dividendSectionStartIndex !== -1){
-    const isDividendSectionRow = (row: string[]) => row[0] === 'Dividends'
-    const isDividendRow = (row: string[]) => row[0] === 'Dividends' && row[1] === 'Data' && !row[2].startsWith('Total')
     for(let dividendRowIndex = dividendSectionStartIndex + 1; isDividendSectionRow(fileContents[dividendRowIndex]); dividendRowIndex++){
       if (!isDividendRow(fileContents[dividendRowIndex])) {
         continue
