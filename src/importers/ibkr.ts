@@ -107,12 +107,17 @@ export const ibkrImporter = async (inputFile: string): Promise<DividendInfo[]> =
         const dividendInfo = dividendInfosMap.get(dividendKey)
         if (!dividendInfo){
           throw new Error('Cannot match WHT payment to dividend payment')
-        } else if (dividendInfo.whtCurrencyAmount !== 0){
-          throw new Error('Two WHT payments have been matched to the same dividend payment')
-        } else {
+        } else if (dividendInfo.whtCurrencyAmount === 0) {
+          // First WHT payment for this dividend
           dividendInfo.whtCurrencyCode = whtCurrencyCode
           dividendInfo.whtCurrencyAmount = whtCurrencyAmount
-        }
+        } else {
+          // Second or subsequent WHT payment for this dividend
+          if (dividendInfo.whtCurrencyCode !== whtCurrencyCode) {
+            throw new Error('Two WHT payments for the same dividend payment have different currencies')
+          }
+          dividendInfo.whtCurrencyAmount += whtCurrencyAmount
+       }
       }
     }
   }
