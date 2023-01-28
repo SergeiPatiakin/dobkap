@@ -1,6 +1,8 @@
 import { fillOpoForm } from '../src/eporezi'
 import { toNaiveDate } from '../src/dates'
 import { fromCurrency } from '../src/rsd-amount'
+import fs from 'fs'
+import path from 'path'
 
 describe('fillOpoForm', () => {
   it('basic', () => {
@@ -23,6 +25,7 @@ describe('fillOpoForm', () => {
         paymentDate: toNaiveDate('2020-07-16'),
       },
     })
-    expect(result).toBeTruthy()
+    const expectedResult = fs.readFileSync(path.join(__dirname, 'data', 'fill-opo-form-basic.expected.xml'), 'utf-8')
+    expect(result).toEqual(expectedResult)
   })
 })
