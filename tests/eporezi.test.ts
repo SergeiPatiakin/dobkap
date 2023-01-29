@@ -20,8 +20,8 @@ describe('fillOpoForm', () => {
         payingEntity: 'BMW',
         grossDividend: fromCurrency(117, 100),
         grossTaxPayable: fromCurrency(117, 15),
-        taxPaidAbroad: fromCurrency(117, 26),
-        taxPayable: fromCurrency(117, 0),
+        taxPaidAbroad: fromCurrency(117, 10),
+        taxPayable: fromCurrency(117, 5),
         paymentDate: toNaiveDate('2020-07-16'),
       },
     })
