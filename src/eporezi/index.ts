@@ -26,7 +26,7 @@ export const getFilingDeadline = (holidayService: HolidayService, paymentDate: N
 export const fillOpoForm = (data: OpoData): string => {
   const opoTemplateContents = fs.readFileSync(path.join(__dirname, 'opo-template.xml'), {encoding: 'utf8'})
 
-  const parser = new XMLParser({ ignoreAttributes: false, /* preserveOrder: true */ parseTagValue: false })
+  const parser = new XMLParser({ ignoreAttributes: false, parseTagValue: false })
   const document = parser.parse(opoTemplateContents)
   document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPrijavi']['ns1:ObracunskiPeriod'] = data.dividendIncomeInfo.paymentDate.format('YYYY-MM')
   document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPrijavi']['ns1:DatumOstvarivanjaPrihoda'] = data.dividendIncomeInfo.paymentDate.format('YYYY-MM-DD')
@@ -54,7 +54,7 @@ export const fillOpoForm = (data: OpoData): string => {
   document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:PorezPlacenDrugojDrzavi'] = formatRsdAmount(data.dividendIncomeInfo.taxPaidAbroad)
   document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:PorezZaUplatu'] = formatRsdAmount(data.dividendIncomeInfo.taxPayable)
 
-  const builder = new XMLBuilder({ format: true, ignoreAttributes: false, /* preserveOrder: true */ cdataPropName: 'cdataContent' })
+  const builder = new XMLBuilder({ format: true, ignoreAttributes: false, cdataPropName: 'cdataContent' })
   const opoFormContents = `<?xml version="1.0" encoding="UTF-8"?>\n` + builder.build(document)
 
   return opoFormContents
