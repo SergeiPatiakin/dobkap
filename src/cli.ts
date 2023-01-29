@@ -86,12 +86,12 @@ const processImport = async (args: DobKapImportArgs) => {
 interface DobKapCheckRateArgs {
   day: string
   currency: string
-  confFilePath?: string
+  conf?: string
 }
 
 const processCheckRate = async (args: DobKapCheckRateArgs) => {
   const conf = pipe(
-    getConf(O.fromNullable(args.confFilePath)),
+    getConf(O.fromNullable(args.conf)),
     E.fold(e => {throw new Error(e.join('; '))}, identity)
   )
   const apiTokens = {

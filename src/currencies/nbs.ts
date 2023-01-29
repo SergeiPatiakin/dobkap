@@ -1,6 +1,6 @@
 import got from 'got'
 import { NaiveDate, CurrencyCode } from '../data-types'
-import libxml, {Element} from 'libxmljs'
+import { XMLParser } from 'fast-xml-parser'
 
 const nbsCurrencyCodeMapping: Map<string, CurrencyCode> = new Map([
   ['EUR', CurrencyCode.EUR],
@@ -37,14 +37,20 @@ export const nbsCurrencyService = async (day: NaiveDate, currencyCode: CurrencyC
     },
     form,
   })
-  const document = libxml.parseXmlString(result.body)
-  const children = document!.root()!.childNodes() as Element[];
 
-  const nbsExchangeRates = children.filter(c => c.name() === 'Item').map(c => ({
-    nbsCurrencyCode: (c.childNodes() as Element[]).filter(x => x.name() === 'Currency')[0].child(0)!.toString(),
-    scaleFactor: Number((c.childNodes() as Element[]).filter(x => x.name() === 'Unit')[0].child(0)!.toString()),
-    scaledExchangeRate: Number((c.childNodes() as Element[]).filter(x => x.name() === 'Middle_Rate')[0].child(0)!.toString()),
-  }))
+  const parser = new XMLParser({ ignoreAttributes: false, parseTagValue: false })
+  const document = parser.parse(result.body)
+  
+  const nbsExchangeRates = document['Exchange_Rates_List']['Item'].map((c: any) => ({
+    nbsCurrencyCode: c['Currency'],
+    scaleFactor: Number(c['Unit']),
+    scaledExchangeRate: Number(c['Middle_Rate']),
+  })) as Array<{
+    nbsCurrencyCode: string,
+    scaleFactor: number,
+    scaledExchangeRate: number,
+  }>
+
   const exchangeRates = nbsExchangeRates.map(
     ({nbsCurrencyCode, scaleFactor, scaledExchangeRate}) => ({
       currencyCode: nbsCurrencyCodeMapping.get(nbsCurrencyCode),
@@ -52,5 +58,8 @@ export const nbsCurrencyService = async (day: NaiveDate, currencyCode: CurrencyC
     })
   ).filter(x => x.currencyCode)
   // TODO: cache entries in exchangeRates
-  return exchangeRates.find(x => x.currencyCode === currencyCode)!.exchangeRate
+
+  const exchangeRate = exchangeRates.find(x => x.currencyCode === currencyCode)!.exchangeRate
+
+  return exchangeRate
 }
