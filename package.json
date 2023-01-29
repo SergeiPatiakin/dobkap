@@ -1,10 +1,10 @@
 {
   "name": "dobkap",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
-    "build": "tsc && cp src/eporezi/*.xml lib/eporezi",
+    "build": "tsc",
     "clean": "rm -rf lib",
     "test": "jest --runInBand --forceExit --detectOpenHandles --verbose false",
     "prepublish": "npm run clean && npm run build"

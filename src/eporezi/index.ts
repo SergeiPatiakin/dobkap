@@ -1,7 +1,5 @@
 import { DividendIncomeInfo } from "../dividend";
 import { NaiveDate } from "../data-types";
-import fs from "fs";
-import path from 'path'
 import { formatRsdAmount } from "../rsd-amount";
 import { HolidayService } from "../holidays";
 import { XMLParser, XMLBuilder } from "fast-xml-parser"
@@ -24,7 +22,64 @@ const TAX_FILING_DEADLINE_OFFSET = 30
 export const getFilingDeadline = (holidayService: HolidayService, paymentDate: NaiveDate) => holidayService.workingDayAfter(paymentDate, TAX_FILING_DEADLINE_OFFSET)
 
 export const fillOpoForm = (data: OpoData): string => {
-  const opoTemplateContents = fs.readFileSync(path.join(__dirname, 'opo-template.xml'), {encoding: 'utf8'})
+  const opoTemplateContents = `
+    <ns1:PodaciPoreskeDeklaracije
+      xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+      xmlns:ns1='http://pid.purs.gov.rs'>
+      <ns1:PodaciOPrijavi>
+          <ns1:VrstaPrijave>1</ns1:VrstaPrijave>
+          <ns1:ObracunskiPeriod></ns1:ObracunskiPeriod>
+          <ns1:DatumOstvarivanjaPrihoda></ns1:DatumOstvarivanjaPrihoda>
+          <ns1:Rok>1</ns1:Rok>
+          <ns1:DatumDospelostiObaveze></ns1:DatumDospelostiObaveze>
+          </ns1:PodaciOPrijavi>
+          <ns1:PodaciOPoreskomObvezniku>
+              <ns1:PoreskiIdentifikacioniBroj></ns1:PoreskiIdentifikacioniBroj>
+          <ns1:ImePrezimeObveznika></ns1:ImePrezimeObveznika>
+          <ns1:UlicaBrojPoreskogObveznika></ns1:UlicaBrojPoreskogObveznika>
+          <ns1:PrebivalisteOpstina></ns1:PrebivalisteOpstina>
+          <ns1:JMBGPodnosiocaPrijave></ns1:JMBGPodnosiocaPrijave>
+          <ns1:TelefonKontaktOsobe></ns1:TelefonKontaktOsobe>
+          <ns1:ElektronskaPosta></ns1:ElektronskaPosta>
+          </ns1:PodaciOPoreskomObvezniku>
+          <ns1:PodaciONacinuOstvarivanjaPrihoda>
+              <ns1:NacinIsplate>3</ns1:NacinIsplate>
+          <ns1:Ostalo></ns1:Ostalo>
+          </ns1:PodaciONacinuOstvarivanjaPrihoda>
+          <ns1:DeklarisaniPodaciOVrstamaPrihoda>
+              <ns1:PodaciOVrstamaPrihoda>
+                  <ns1:RedniBroj>1</ns1:RedniBroj>
+                  <ns1:SifraVrstePrihoda>111402000</ns1:SifraVrstePrihoda>
+                  <ns1:BrutoPrihod></ns1:BrutoPrihod>
+                  <ns1:OsnovicaZaPorez></ns1:OsnovicaZaPorez>
+                  <ns1:ObracunatiPorez></ns1:ObracunatiPorez>
+                  <ns1:PorezPlacenDrugojDrzavi></ns1:PorezPlacenDrugojDrzavi>
+                  <ns1:PorezZaUplatu></ns1:PorezZaUplatu>
+              </ns1:PodaciOVrstamaPrihoda>
+      </ns1:DeklarisaniPodaciOVrstamaPrihoda>
+      <ns1:Ukupno>
+          <ns1:FondSati>0.00</ns1:FondSati>
+          <ns1:BrutoPrihod></ns1:BrutoPrihod>
+          <ns1:OsnovicaZaPorez></ns1:OsnovicaZaPorez>
+          <ns1:ObracunatiPorez></ns1:ObracunatiPorez>
+          <ns1:PorezPlacenDrugojDrzavi></ns1:PorezPlacenDrugojDrzavi>
+          <ns1:PorezZaUplatu></ns1:PorezZaUplatu>
+          <ns1:OsnovicaZaDoprinose>0.00</ns1:OsnovicaZaDoprinose>
+          <ns1:PIO>0.00</ns1:PIO>
+          <ns1:ZDRAVSTVO>0.00</ns1:ZDRAVSTVO>
+          <ns1:NEZAPOSLENOST>0.00</ns1:NEZAPOSLENOST>
+      </ns1:Ukupno>
+      <ns1:Kamata>
+          <ns1:PorezZaUplatu>0</ns1:PorezZaUplatu>
+          <ns1:OsnovicaZaDoprinose>0</ns1:OsnovicaZaDoprinose>
+          <ns1:PIO>0</ns1:PIO>
+          <ns1:ZDRAVSTVO>0</ns1:ZDRAVSTVO>
+          <ns1:NEZAPOSLENOST>0</ns1:NEZAPOSLENOST>
+      </ns1:Kamata>
+      <ns1:PodaciODodatnojKamati>
+      </ns1:PodaciODodatnojKamati>
+  </ns1:PodaciPoreskeDeklaracije>
+  `
 
   const parser = new XMLParser({ ignoreAttributes: false, parseTagValue: false })
   const document = parser.parse(opoTemplateContents)
