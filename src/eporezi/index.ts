@@ -2,9 +2,9 @@ import { DividendIncomeInfo } from "../dividend";
 import { NaiveDate } from "../data-types";
 import fs from "fs";
 import path from 'path'
-import libxml, { Document } from 'libxmljs'
 import { formatRsdAmount } from "../rsd-amount";
 import { HolidayService } from "../holidays";
+import { XMLParser, XMLBuilder } from "fast-xml-parser"
 
 export interface OpoData {
   jmbg: string
@@ -19,59 +19,43 @@ export interface OpoData {
   dividendIncomeInfo: DividendIncomeInfo
 }
 
-type XPathSafeString = string
-
-// Convert local XPath tag-name selector to namespaced selector
-const nsTag = (tagName: XPathSafeString) => `*["${tagName}"=local-name()]`
-
-// Strange behavior with ts-node
-const maybeHead = <T>(a: T | T[]): T => Array.isArray(a) ? (a as any)[0] : a as any
-
-// Mutates the document
-const setText = (document: Document, localXPath: string[], text: string): void => {
-  const xPath = localXPath.map(x => `/${nsTag(x)}`).join('')
-  maybeHead(document.get(xPath)!).text(text)
-}
-
-// Mutates the document
-const setCdata = (document: Document, localXPath: string[], text: string): void => {
-  const xPath = localXPath.map(x => `/${nsTag(x)}`).join('')
-  maybeHead(document.get(xPath)! as any).cdata(text)
-}
-
 const TAX_FILING_DEADLINE_OFFSET = 30
 
 export const getFilingDeadline = (holidayService: HolidayService, paymentDate: NaiveDate) => holidayService.workingDayAfter(paymentDate, TAX_FILING_DEADLINE_OFFSET)
 
 export const fillOpoForm = (data: OpoData): string => {
   const opoTemplateContents = fs.readFileSync(path.join(__dirname, 'opo-template.xml'), {encoding: 'utf8'})
-  const document = libxml.parseXmlString(opoTemplateContents)
-  setText(document, ['PodaciPoreskeDeklaracije', 'PodaciOPrijavi', 'ObracunskiPeriod'], data.dividendIncomeInfo.paymentDate.format('YYYY-MM'))
-  setText(document, ['PodaciPoreskeDeklaracije', 'PodaciOPrijavi', 'DatumOstvarivanjaPrihoda'], data.dividendIncomeInfo.paymentDate.format('YYYY-MM-DD'))
-  setText(document, ['PodaciPoreskeDeklaracije', 'PodaciOPrijavi', 'DatumDospelostiObaveze'], data.filingDeadline.format('YYYY-MM-DD'))
+
+  const parser = new XMLParser({ ignoreAttributes: false, /* preserveOrder: true */ parseTagValue: false })
+  const document = parser.parse(opoTemplateContents)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPrijavi']['ns1:ObracunskiPeriod'] = data.dividendIncomeInfo.paymentDate.format('YYYY-MM')
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPrijavi']['ns1:DatumOstvarivanjaPrihoda'] = data.dividendIncomeInfo.paymentDate.format('YYYY-MM-DD')
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPrijavi']['ns1:DatumDospelostiObaveze'] = data.filingDeadline.format('YYYY-MM-DD')
+
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPoreskomObvezniku']['ns1:PoreskiIdentifikacioniBroj'] = data.jmbg
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPoreskomObvezniku']['ns1:ImePrezimeObveznika'] = { cdataContent: data.fullName }
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPoreskomObvezniku']['ns1:UlicaBrojPoreskogObveznika'] = { cdataContent: data.streetAddress }
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPoreskomObvezniku']['ns1:PrebivalisteOpstina'] = data.opstinaCode
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPoreskomObvezniku']['ns1:JMBGPodnosiocaPrijave'] = data.filerJmbg
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPoreskomObvezniku']['ns1:TelefonKontaktOsobe'] = data.phoneNumber
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPoreskomObvezniku']['ns1:ElektronskaPosta'] = data.email
   
-  setText(document, ['PodaciPoreskeDeklaracije', 'PodaciOPoreskomObvezniku', 'PoreskiIdentifikacioniBroj'], data.jmbg)
-  setCdata(document, ['PodaciPoreskeDeklaracije', 'PodaciOPoreskomObvezniku', 'ImePrezimeObveznika'], data.fullName)
-  setCdata(document, ['PodaciPoreskeDeklaracije', 'PodaciOPoreskomObvezniku', 'UlicaBrojPoreskogObveznika'], data.streetAddress)
-  setText(document, ['PodaciPoreskeDeklaracije', 'PodaciOPoreskomObvezniku', 'PrebivalisteOpstina'], data.opstinaCode)
-  setText(document, ['PodaciPoreskeDeklaracije', 'PodaciOPoreskomObvezniku', 'JMBGPodnosiocaPrijave'], data.filerJmbg)
-  setText(document, ['PodaciPoreskeDeklaracije', 'PodaciOPoreskomObvezniku', 'TelefonKontaktOsobe'], data.phoneNumber)
-  setText(document, ['PodaciPoreskeDeklaracije', 'PodaciOPoreskomObvezniku', 'ElektronskaPosta'], data.email)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciONacinuOstvarivanjaPrihoda']['ns1:Ostalo'] = data.realizationMethod
   
-  setText(document, ['PodaciPoreskeDeklaracije', 'PodaciONacinuOstvarivanjaPrihoda', 'Ostalo'], data.realizationMethod)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:BrutoPrihod'] = formatRsdAmount(data.dividendIncomeInfo.grossDividend)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:OsnovicaZaPorez'] = formatRsdAmount(data.dividendIncomeInfo.grossDividend)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:ObracunatiPorez'] = formatRsdAmount(data.dividendIncomeInfo.grossTaxPayable)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:PorezPlacenDrugojDrzavi'] = formatRsdAmount(data.dividendIncomeInfo.taxPaidAbroad)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:PorezZaUplatu'] = formatRsdAmount(data.dividendIncomeInfo.taxPayable)
+  
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:BrutoPrihod'] = formatRsdAmount(data.dividendIncomeInfo.grossDividend)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:OsnovicaZaPorez'] = formatRsdAmount(data.dividendIncomeInfo.grossDividend)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:ObracunatiPorez'] = formatRsdAmount(data.dividendIncomeInfo.grossTaxPayable)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:PorezPlacenDrugojDrzavi'] = formatRsdAmount(data.dividendIncomeInfo.taxPaidAbroad)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:PorezZaUplatu'] = formatRsdAmount(data.dividendIncomeInfo.taxPayable)
 
-  setText(document, ['PodaciPoreskeDeklaracije', 'DeklarisaniPodaciOVrstamaPrihoda', 'PodaciOVrstamaPrihoda', 'BrutoPrihod'], formatRsdAmount(data.dividendIncomeInfo.grossDividend))
-  setText(document, ['PodaciPoreskeDeklaracije', 'DeklarisaniPodaciOVrstamaPrihoda', 'PodaciOVrstamaPrihoda', 'OsnovicaZaPorez'], formatRsdAmount(data.dividendIncomeInfo.grossDividend))
-  setText(document, ['PodaciPoreskeDeklaracije', 'DeklarisaniPodaciOVrstamaPrihoda', 'PodaciOVrstamaPrihoda', 'ObracunatiPorez'], formatRsdAmount(data.dividendIncomeInfo.grossTaxPayable))
-  setText(document, ['PodaciPoreskeDeklaracije', 'DeklarisaniPodaciOVrstamaPrihoda', 'PodaciOVrstamaPrihoda', 'PorezPlacenDrugojDrzavi'], formatRsdAmount(data.dividendIncomeInfo.taxPaidAbroad))
-  setText(document, ['PodaciPoreskeDeklaracije', 'DeklarisaniPodaciOVrstamaPrihoda', 'PodaciOVrstamaPrihoda', 'PorezZaUplatu'], formatRsdAmount(data.dividendIncomeInfo.taxPayable))
-  // TODO: tax paid abroad needed in this section?
+  const builder = new XMLBuilder({ format: true, ignoreAttributes: false, /* preserveOrder: true */ cdataPropName: 'cdataContent' })
+  const opoFormContents = `<?xml version="1.0" encoding="UTF-8"?>\n` + builder.build(document)
 
-  setText(document, ['PodaciPoreskeDeklaracije', 'Ukupno', 'BrutoPrihod'], formatRsdAmount(data.dividendIncomeInfo.grossDividend))
-  setText(document, ['PodaciPoreskeDeklaracije', 'Ukupno', 'OsnovicaZaPorez'], formatRsdAmount(data.dividendIncomeInfo.grossDividend))
-  setText(document, ['PodaciPoreskeDeklaracije', 'Ukupno', 'ObracunatiPorez'], formatRsdAmount(data.dividendIncomeInfo.grossTaxPayable))
-  setText(document, ['PodaciPoreskeDeklaracije', 'Ukupno', 'PorezPlacenDrugojDrzavi'], formatRsdAmount(data.dividendIncomeInfo.taxPaidAbroad))
-  setText(document, ['PodaciPoreskeDeklaracije', 'Ukupno', 'PorezZaUplatu'], formatRsdAmount(data.dividendIncomeInfo.taxPayable))
-
-  return document.toString()
+  return opoFormContents
 }
