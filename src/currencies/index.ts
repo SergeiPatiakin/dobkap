@@ -3,17 +3,20 @@ import { nbsCurrencyService } from "./nbs"
 import { formatNaiveDate } from "../dates"
 import { singaporeMasCurrencyService } from "./singapore-mas"
 import { mexicoBdmCurrencyService } from "./mexico-bdm"
-const Cache = require('async-disk-cache')
-
-const cache = new Cache('DobkapCurrencyService')
 
 interface ApiTokens {
   mexicoBdmToken: string
 }
 
-export const createCurrencyService = (apiTokens: Partial<ApiTokens>) => async (day: NaiveDate, currencyCode: CurrencyCode): Promise<number> => {
+interface AsyncCache {
+  has: (key: string) => Promise<boolean>
+  get: (key: string) => Promise<any>
+  set: (key: string, value: any) => Promise<void>
+}
+
+export const createCurrencyService = (apiTokens: Partial<ApiTokens>, cache?: AsyncCache) => async (day: NaiveDate, currencyCode: CurrencyCode): Promise<number> => {
   const cacheKey = `${formatNaiveDate(day)}-${currencyCode}`
-  if (await cache.has(cacheKey)){
+  if (cache && await cache.has(cacheKey)){
     const { value } = await cache.get(cacheKey)
     return value
   } else {
@@ -34,13 +37,11 @@ export const createCurrencyService = (apiTokens: Partial<ApiTokens>) => async (d
     } else {
       value = await nbsCurrencyService(day, currencyCode)
     }
-    await cache.set(cacheKey, value)
+    if (cache) {
+      await cache.set(cacheKey, value)
+    }
     return value
   }
-}
-
-export const clearCache = async () => {
-  await cache.clear()
 }
 
 export type CurrencyService = (day: NaiveDate, currencyCode: CurrencyCode) => Promise<number>

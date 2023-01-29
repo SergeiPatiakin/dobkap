@@ -1,6 +1,6 @@
 {
   "name": "dobkap",
-  "version": "0.13.0",
+  "version": "0.14.0",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
@@ -24,7 +24,6 @@
     "@types/got": "^9.6.11",
     "@types/node": "^14.0.24",
     "@types/yargs": "^15.0.5",
-    "async-disk-cache": "^2.1.0",
     "csv-parser": "^2.3.3",
     "fast-xml-parser": "^4.0.15",
     "fp-ts": "^2.7.1",
