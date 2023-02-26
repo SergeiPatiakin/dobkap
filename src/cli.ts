@@ -2,7 +2,7 @@ import { Argv } from 'yargs'
 import * as O from 'fp-ts/lib/Option'
 import * as E from 'fp-ts/lib/Either'
 import { getConf } from './conf'
-import { DividendInfo, getDividendIncomeInfo, DividendIncomeInfo } from './dividend'
+import { PassiveIncomeInfo, getPassiveIncomeFilingInfo, PassiveIncomeFilingInfo } from './passive-income'
 import { trivialImporter } from './importers/trivial'
 import { createCurrencyService } from './currencies'
 import { toNaiveDate } from './dates'
@@ -42,11 +42,11 @@ const processImport = async (args: DobKapImportArgs) => {
     E.fold(e => {throw new Error(e.join('; '))}, identity)
   )
   
-  let dividendInfos: DividendInfo[]
+  let passiveIncomeInfos: PassiveIncomeInfo[]
   if (normArgs.importer === 'trivial'){
-    dividendInfos = await trivialImporter(normArgs.inputFilePath)
+    passiveIncomeInfos = await trivialImporter(normArgs.inputFilePath)
   } else if (normArgs.importer === 'ibkr'){
-    dividendInfos = await ibkrImporter(normArgs.inputFilePath)
+    passiveIncomeInfos = await ibkrImporter(normArgs.inputFilePath)
   } else {
     throw new Error('Unknown importer')
   }
@@ -54,14 +54,20 @@ const processImport = async (args: DobKapImportArgs) => {
   const apiTokens = {mexicoBdmToken: conf.mexicoBdmToken}
   const currencyService = createCurrencyService(apiTokens)
 
-  for (const [idx, dividendInfo] of dividendInfos.entries()){
-    const dividendIncomeInfo = await getDividendIncomeInfo(currencyService, dividendInfo)
+  for (const [idx, passiveIncomeInfo] of passiveIncomeInfos.entries()){
+    const passiveIncomeFilingInfo = await getPassiveIncomeFilingInfo(
+      currencyService,
+      passiveIncomeInfo
+    )
     
     const holidays = conf.holidays.map(h => toNaiveDate(h))
-    const holidayRange = {start: toNaiveDate(conf.holidayRangeStart), end: toNaiveDate(conf.holidayRangeEnd)}
+    const holidayRange = {
+      start: toNaiveDate(conf.holidayRangeStart),
+      end: toNaiveDate(conf.holidayRangeEnd),
+    }
     const holidayService = createHolidayService(holidays, holidayRange)
 
-    const filingDeadline = getFilingDeadline(holidayService, dividendIncomeInfo.paymentDate)
+    const filingDeadline = getFilingDeadline(holidayService, passiveIncomeFilingInfo.incomeDate)
 
     const opoData: OpoData = {
       jmbg: conf.jmbg,
@@ -73,11 +79,11 @@ const processImport = async (args: DobKapImportArgs) => {
       email: conf.email,
       realizationMethod: conf.realizationMethod,
       filingDeadline,
-      dividendIncomeInfo,
+      passiveIncomeFilingInfo: passiveIncomeFilingInfo,
     }
     const opoForm = fillOpoForm(opoData)
     const inputFileName = path.parse(normArgs.inputFilePath).name
-    const outputFileName = inputFileName + (dividendInfos.length > 1 ? `.out.${idx + 1}.xml` : '.out.xml')
+    const outputFileName = inputFileName + (passiveIncomeInfos.length > 1 ? `.out.${idx + 1}.xml` : '.out.xml')
     const outputFilePath = path.join(normArgs.outputDirPath, outputFileName)
     fs.writeFileSync(outputFilePath, opoForm)
   }
@@ -103,7 +109,7 @@ const processCheckRate = async (args: DobKapCheckRateArgs) => {
 }
 
 yargs.scriptName('dobkap')
-  .command('import', 'Import dividend files', (yargs: Argv) => {
+  .command('import', 'Import passive income files', (yargs: Argv) => {
     yargs.option('input', {
       describe: 'Path to input file',
       alias: 'i',

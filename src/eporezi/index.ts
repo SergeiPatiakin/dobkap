@@ -1,4 +1,4 @@
-import { DividendIncomeInfo } from "../dividend";
+import { PassiveIncomeFilingInfo } from "../passive-income";
 import { NaiveDate } from "../data-types";
 import { formatRsdAmount } from "../rsd-amount";
 import { HolidayService } from "../holidays";
@@ -14,7 +14,7 @@ export interface OpoData {
   email: string
   realizationMethod: string
   filingDeadline: NaiveDate
-  dividendIncomeInfo: DividendIncomeInfo
+  passiveIncomeFilingInfo: PassiveIncomeFilingInfo
 }
 
 const TAX_FILING_DEADLINE_OFFSET = 30
@@ -83,8 +83,8 @@ export const fillOpoForm = (data: OpoData): string => {
 
   const parser = new XMLParser({ ignoreAttributes: false, parseTagValue: false })
   const document = parser.parse(opoTemplateContents)
-  document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPrijavi']['ns1:ObracunskiPeriod'] = data.dividendIncomeInfo.paymentDate.format('YYYY-MM')
-  document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPrijavi']['ns1:DatumOstvarivanjaPrihoda'] = data.dividendIncomeInfo.paymentDate.format('YYYY-MM-DD')
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPrijavi']['ns1:ObracunskiPeriod'] = data.passiveIncomeFilingInfo.incomeDate.format('YYYY-MM')
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPrijavi']['ns1:DatumOstvarivanjaPrihoda'] = data.passiveIncomeFilingInfo.incomeDate.format('YYYY-MM-DD')
   document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPrijavi']['ns1:DatumDospelostiObaveze'] = data.filingDeadline.format('YYYY-MM-DD')
 
   document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciOPoreskomObvezniku']['ns1:PoreskiIdentifikacioniBroj'] = data.jmbg
@@ -97,17 +97,17 @@ export const fillOpoForm = (data: OpoData): string => {
   
   document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciONacinuOstvarivanjaPrihoda']['ns1:Ostalo'] = data.realizationMethod
   
-  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:BrutoPrihod'] = formatRsdAmount(data.dividendIncomeInfo.grossDividend)
-  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:OsnovicaZaPorez'] = formatRsdAmount(data.dividendIncomeInfo.grossDividend)
-  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:ObracunatiPorez'] = formatRsdAmount(data.dividendIncomeInfo.grossTaxPayable)
-  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:PorezPlacenDrugojDrzavi'] = formatRsdAmount(data.dividendIncomeInfo.taxPaidAbroad)
-  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:PorezZaUplatu'] = formatRsdAmount(data.dividendIncomeInfo.taxPayable)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:BrutoPrihod'] = formatRsdAmount(data.passiveIncomeFilingInfo.grossIncome)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:OsnovicaZaPorez'] = formatRsdAmount(data.passiveIncomeFilingInfo.grossIncome)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:ObracunatiPorez'] = formatRsdAmount(data.passiveIncomeFilingInfo.grossTaxPayable)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:PorezPlacenDrugojDrzavi'] = formatRsdAmount(data.passiveIncomeFilingInfo.taxPaidAbroad)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:PorezZaUplatu'] = formatRsdAmount(data.passiveIncomeFilingInfo.taxPayable)
   
-  document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:BrutoPrihod'] = formatRsdAmount(data.dividendIncomeInfo.grossDividend)
-  document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:OsnovicaZaPorez'] = formatRsdAmount(data.dividendIncomeInfo.grossDividend)
-  document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:ObracunatiPorez'] = formatRsdAmount(data.dividendIncomeInfo.grossTaxPayable)
-  document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:PorezPlacenDrugojDrzavi'] = formatRsdAmount(data.dividendIncomeInfo.taxPaidAbroad)
-  document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:PorezZaUplatu'] = formatRsdAmount(data.dividendIncomeInfo.taxPayable)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:BrutoPrihod'] = formatRsdAmount(data.passiveIncomeFilingInfo.grossIncome)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:OsnovicaZaPorez'] = formatRsdAmount(data.passiveIncomeFilingInfo.grossIncome)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:ObracunatiPorez'] = formatRsdAmount(data.passiveIncomeFilingInfo.grossTaxPayable)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:PorezPlacenDrugojDrzavi'] = formatRsdAmount(data.passiveIncomeFilingInfo.taxPaidAbroad)
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:Ukupno']['ns1:PorezZaUplatu'] = formatRsdAmount(data.passiveIncomeFilingInfo.taxPayable)
 
   const builder = new XMLBuilder({ format: true, ignoreAttributes: false, cdataPropName: 'cdataContent' })
   const opoFormContents = `<?xml version="1.0" encoding="UTF-8"?>\n` + builder.build(document)

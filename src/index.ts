@@ -1,14 +1,14 @@
 import { Conf, getConf } from "./conf";
 import { createCurrencyService } from "./currencies";
 import { toNaiveDate } from "./dates";
-import { DividendInfo, getDividendIncomeInfo } from "./dividend";
+import { PassiveIncomeInfo, getPassiveIncomeFilingInfo } from "./passive-income";
 import { fillOpoForm, getFilingDeadline, OpoData } from "./eporezi";
 import { createHolidayService } from "./holidays";
 import { ibkrImporter } from "./importers/ibkr";
 
 export {
   createCurrencyService,
-  getDividendIncomeInfo,
+  getPassiveIncomeFilingInfo as getDividendIncomeInfo,
   fillOpoForm,
   getFilingDeadline,
   createHolidayService,
@@ -16,6 +16,6 @@ export {
   ibkrImporter,
   toNaiveDate,
   Conf,
-  DividendInfo,
+  PassiveIncomeInfo as DividendInfo,
   OpoData,
 }

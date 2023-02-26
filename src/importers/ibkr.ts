@@ -1,6 +1,6 @@
 import csv from 'csv-parser'
 import fs from 'fs'
-import { DividendInfo } from '../dividend'
+import { PassiveIncomeInfo } from '../passive-income'
 import { CurrencyCode, NaiveDate } from '../data-types'
 import { toNaiveDate, formatNaiveDate } from '../dates'
 
@@ -24,7 +24,7 @@ const toDividendKey = (date: NaiveDate, entityName: string, entityIsin: string) 
 const isDividendSectionRow = (row: string[]) => row[0] === 'Dividends' && row[1] === 'Data'
 const isDividendRow = (row: string[]) => row[0] === 'Dividends' && row[1] === 'Data' && !row[2].startsWith('Total')
 
-export const ibkrImporter = async (inputFile: string): Promise<DividendInfo[]> => {
+export const ibkrImporter = async (inputFile: string): Promise<PassiveIncomeInfo[]> => {
   const fileContents = await parseCsvFile(inputFile)
   
   const dividendSectionStartIndex = fileContents.findIndex(x =>
@@ -36,7 +36,7 @@ export const ibkrImporter = async (inputFile: string): Promise<DividendInfo[]> =
     && x[5] === 'Amount'
   )
 
-  const dividendInfosMap: Map<string, DividendInfo> = new Map()
+  const dividendInfosMap: Map<string, PassiveIncomeInfo> = new Map()
   if (dividendSectionStartIndex !== -1){
     for(let dividendRowIndex = dividendSectionStartIndex + 1; isDividendSectionRow(fileContents[dividendRowIndex]); dividendRowIndex++){
       if (!isDividendRow(fileContents[dividendRowIndex])) {
@@ -52,21 +52,21 @@ export const ibkrImporter = async (inputFile: string): Promise<DividendInfo[]> =
       const payingEntity = parsedEntityName[1]
       const payingEntityIsin = parsedEntityName[2]
       const dividendCurrencyAmount = parseFloat(row[5])
-      const dividendInfo: DividendInfo = {
-        dividendCurrencyCode,
-        paymentDate,
+      const dividendInfo: PassiveIncomeInfo = {
+        incomeCurrencyCode: dividendCurrencyCode,
+        incomeDate: paymentDate,
         payingEntity,
-        dividendCurrencyAmount,
+        incomeCurrencyAmount: dividendCurrencyAmount,
         whtCurrencyCode: dividendCurrencyCode, // Default value, may be overwritten
         whtCurrencyAmount: 0, // Default value, may be overwritten
       }
       const dividendInfoKey = toDividendKey(paymentDate, payingEntity, payingEntityIsin)
       if (dividendInfosMap.has(dividendInfoKey)){
         const existingDividendInfo = dividendInfosMap.get(dividendInfoKey)!
-        if (existingDividendInfo.dividendCurrencyCode !== dividendInfo.dividendCurrencyCode){
+        if (existingDividendInfo.incomeCurrencyCode !== dividendInfo.incomeCurrencyCode){
           throw new Error('Duplicate dividends found with different currencies')
         }
-        existingDividendInfo.dividendCurrencyAmount += dividendInfo.dividendCurrencyAmount
+        existingDividendInfo.incomeCurrencyAmount += dividendInfo.incomeCurrencyAmount
         if (existingDividendInfo.whtCurrencyCode !== dividendInfo.whtCurrencyCode){
           throw new Error('Duplicate dividends found with different withholding tax currencies')
         }
