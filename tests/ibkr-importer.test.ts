@@ -1,4 +1,3 @@
-import moment from 'moment'
 import path from 'path'
 import { formatNaiveDate } from '../src/dates'
 import { ibkrImporter } from '../src/importers/ibkr'
