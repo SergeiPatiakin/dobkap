@@ -6,7 +6,7 @@ import { ibkrImporter } from '../src/importers/ibkr'
 describe('ibkrImporter', () => {
   it('basic - full report', async () => {
     const r = await ibkrImporter(path.join(__dirname, 'data/ibkr-full1.csv'))
-    expect(r).toMatchObject(      [
+    expect(r).toMatchObject([
       {
         incomeCurrencyCode: 'EUR',
         payingEntity: 'ABC',
@@ -19,7 +19,7 @@ describe('ibkrImporter', () => {
   })
   it('basic - dividends section', async () => {
     const r = await ibkrImporter(path.join(__dirname, 'data/ibkr-section1.csv'))
-    expect(r).toMatchObject(      [
+    expect(r).toMatchObject([
       {
         incomeCurrencyCode: 'EUR',
         payingEntity: 'ABC',
@@ -29,5 +29,26 @@ describe('ibkrImporter', () => {
       }
     ])
     expect(formatNaiveDate(r[0].incomeDate)).toBe('2023-01-12')
+  })
+  it('basic - multiple dividends', async () => {
+    const r = await ibkrImporter(path.join(__dirname, 'data/ibkr-section2.csv'))
+    expect(r).toMatchObject([
+      {
+        incomeCurrencyCode: 'GBP',
+        payingEntity: 'DEF1',
+        incomeCurrencyAmount: 70,
+        whtCurrencyCode: 'GBP',
+        whtCurrencyAmount: 0,
+      },
+      {
+        incomeCurrencyCode: 'GBP',
+        payingEntity: 'DEF2',
+        incomeCurrencyAmount: 143,
+        whtCurrencyCode: 'GBP',
+        whtCurrencyAmount: 0,
+      },
+    ])
+    expect(formatNaiveDate(r[0].incomeDate)).toBe('2023-01-12')
+    expect(formatNaiveDate(r[1].incomeDate)).toBe('2023-01-12')
   })
 })
