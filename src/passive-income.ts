@@ -6,6 +6,7 @@ import { RsdAmount } from "./rsd-amount";
 export const PASSIVE_INCOME_TAX_RATE = 0.15
 
 export interface PassiveIncomeInfo {
+  type: 'dividend' | 'interest'
   payingEntity: string
   incomeDate: NaiveDate
   incomeCurrencyCode: CurrencyCode
@@ -15,6 +16,7 @@ export interface PassiveIncomeInfo {
 }
 
 export interface PassiveIncomeFilingInfo {
+  type: 'dividend' | 'interest'
   payingEntity: string
   incomeDate: NaiveDate
   grossIncome: RsdAmount
@@ -28,28 +30,30 @@ export const getPassiveIncomeFilingInfo = async (
   passiveIncomeInfo: PassiveIncomeInfo,
 ): Promise<PassiveIncomeFilingInfo> => {
   const {
+    type,
     payingEntity,
-    incomeDate: paymentDate,
-    incomeCurrencyCode: dividendCurrencyCode,
-    incomeCurrencyAmount: dividendCurrencyAmount,
+    incomeDate,
+    incomeCurrencyCode,
+    incomeCurrencyAmount,
     whtCurrencyCode,
     whtCurrencyAmount,
   } = passiveIncomeInfo
   
-  const dividendExchangeRate = await currencyService(paymentDate, dividendCurrencyCode)
-  const grossDividend = Rsd.fromCurrency(dividendExchangeRate, dividendCurrencyAmount)
+  const dividendExchangeRate = await currencyService(incomeDate, incomeCurrencyCode)
+  const grossIncome = Rsd.fromCurrency(dividendExchangeRate, incomeCurrencyAmount)
   
-  const whtExchangeRate = await currencyService(paymentDate, whtCurrencyCode)
+  const whtExchangeRate = await currencyService(incomeDate, whtCurrencyCode)
   const taxPaidAbroad = Rsd.fromCurrency(whtExchangeRate, whtCurrencyAmount)
   
-  const grossTaxPayable = Rsd.multiply(PASSIVE_INCOME_TAX_RATE)(grossDividend)
+  const grossTaxPayable = Rsd.multiply(PASSIVE_INCOME_TAX_RATE)(grossIncome)
   const taxPayable = Rsd.map2((grossPayable, paidAbroad) => paidAbroad > grossPayable
     ? BigInt(0)
     : grossPayable - paidAbroad)(grossTaxPayable, taxPaidAbroad)
   return {
+    type,
     payingEntity,
-    incomeDate: paymentDate,
-    grossIncome: grossDividend,
+    incomeDate,
+    grossIncome,
     taxPaidAbroad,
     grossTaxPayable,
     taxPayable,

@@ -53,6 +53,7 @@ export const ibkrImporter = async (inputFile: string): Promise<PassiveIncomeInfo
       const payingEntityIsin = parsedEntityName[2]
       const dividendCurrencyAmount = parseFloat(row[5])
       const dividendInfo: PassiveIncomeInfo = {
+        type: 'dividend',
         incomeCurrencyCode: dividendCurrencyCode,
         incomeDate: paymentDate,
         payingEntity,
