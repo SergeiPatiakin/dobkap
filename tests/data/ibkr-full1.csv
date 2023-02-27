@@ -107,7 +107,7 @@ Interest Accruals,Data,Base Currency Summary,Ending Accrual Balance,0
 Interest Accruals,Data,EUR,Starting Accrual Balance,0
 Interest Accruals,Data,EUR,Interest Accrued,0
 Interest Accruals,Data,EUR,Accrual Reversal,0
-Interest Accruals,Data,EUR,Ending Accrual Balance,-0
+Interest Accruals,Data,EUR,Ending Accrual Balance,0
 Dividends,Header,Currency,Date,Description,Amount,Code
 Dividends,Data,EUR,2023-01-12,ABC(SG0000123456) Cash Dividend EUR 0.30 per Share (Ordinary Dividend),60.0,
 Dividends,Data,Total,,,60.0,
