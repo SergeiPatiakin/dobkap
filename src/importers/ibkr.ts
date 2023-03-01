@@ -24,10 +24,8 @@ const toDividendKey = (date: NaiveDate, entityName: string, entityIsin: string) 
 const isDividendSectionRow = (row: string[]) => row[0] === 'Dividends' && row[1] === 'Data'
 const isDividendRow = (row: string[]) => row[0] === 'Dividends' && row[1] === 'Data' && !row[2].startsWith('Total')
 
-export const ibkrImporter = async (inputFile: string): Promise<PassiveIncomeInfo[]> => {
-  const fileContents = await parseCsvFile(inputFile)
-  
-  const dividendSectionStartIndex = fileContents.findIndex(x =>
+const getDividendIncomes = (csvCells: string[][]): PassiveIncomeInfo[] => {
+  const dividendSectionStartIndex = csvCells.findIndex(x =>
     x[0] === 'Dividends'
     && x[1] === 'Header'
     && x[2] === 'Currency'
@@ -38,11 +36,15 @@ export const ibkrImporter = async (inputFile: string): Promise<PassiveIncomeInfo
 
   const dividendInfosMap: Map<string, PassiveIncomeInfo> = new Map()
   if (dividendSectionStartIndex !== -1){
-    for(let dividendRowIndex = dividendSectionStartIndex + 1; isDividendSectionRow(fileContents[dividendRowIndex]); dividendRowIndex++){
-      if (!isDividendRow(fileContents[dividendRowIndex])) {
+    for(
+      let dividendRowIndex = dividendSectionStartIndex + 1;
+      isDividendSectionRow(csvCells[dividendRowIndex]);
+      dividendRowIndex++
+    ){
+      if (!isDividendRow(csvCells[dividendRowIndex])) {
         continue
       }
-      const row = fileContents[dividendRowIndex]
+      const row = csvCells[dividendRowIndex]
       const dividendCurrencyCode: CurrencyCode = row[2] as CurrencyCode
       const paymentDate: NaiveDate = toNaiveDate(row[3]) // TODO: decode to day string first?
       const parsedEntityName = row[4].match(ENTITY_NAME_REGEX)
@@ -76,7 +78,7 @@ export const ibkrImporter = async (inputFile: string): Promise<PassiveIncomeInfo
       }
     }
 
-    const whtSectionStartIndex = fileContents.findIndex(x => 
+    const whtSectionStartIndex = csvCells.findIndex(x => 
       x[0] === 'Withholding Tax'
       && x[1] === 'Header'
       && x[2] === 'Currency'
@@ -89,11 +91,11 @@ export const ibkrImporter = async (inputFile: string): Promise<PassiveIncomeInfo
     if (whtSectionStartIndex !== -1){
       const isWhtSectionRow = (row: string[]) => row[0] === 'Withholding Tax'
       const isWhtRow = (row: string[]) => row[0] === 'Withholding Tax' && row[1] === 'Data' && !row[2].startsWith('Total')
-      for (let whtRowIndex = whtSectionStartIndex + 1; isWhtSectionRow(fileContents[whtRowIndex]); whtRowIndex++){
-        if (!isWhtRow(fileContents[whtRowIndex])){
+      for (let whtRowIndex = whtSectionStartIndex + 1; isWhtSectionRow(csvCells[whtRowIndex]); whtRowIndex++){
+        if (!isWhtRow(csvCells[whtRowIndex])){
           continue
         }
-        const row = fileContents[whtRowIndex]
+        const row = csvCells[whtRowIndex]
         const whtCurrencyCode: CurrencyCode = row[2] as CurrencyCode
         const paymentDate: NaiveDate = toNaiveDate(row[3])
         const parsedEntityName = row[4].match(ENTITY_NAME_REGEX)
@@ -123,4 +125,55 @@ export const ibkrImporter = async (inputFile: string): Promise<PassiveIncomeInfo
     }
   }
   return [...dividendInfosMap.values()]
+}
+
+const isInterestSectionRow = (row: string[]) => row[0] === 'Interest' && row[1] === 'Data'
+const isInterestRow = (row: string[]) => row[0] === 'Interest' && row[1] === 'Data' && !row[2].startsWith('Total')
+
+export const getInterestIncomes = (csvCells: string[][]) => {
+  const interestIncomes: PassiveIncomeInfo[] = []
+  const interestSectionStartIndex = csvCells.findIndex(x =>
+    x[0] === 'Interest'
+    && x[1] === 'Header'
+    && x[2] === 'Currency'
+    && x[3] === 'Date'
+    && x[4] === 'Description'
+    && x[5] === 'Amount'
+  )
+  for(
+    let interestRowIndex = interestSectionStartIndex + 1;
+    isInterestSectionRow(csvCells[interestRowIndex]);
+    interestRowIndex++
+  ){
+    if (!isInterestRow(csvCells[interestRowIndex])) {
+      continue
+    }
+    const row = csvCells[interestRowIndex]
+    const interestCurrencyCode: CurrencyCode = row[2] as CurrencyCode
+    const paymentDate: NaiveDate = toNaiveDate(row[3]) // TODO: decode to day string first?
+    if (!row[4].startsWith(`${interestCurrencyCode} Credit Interest for `)) {
+      continue
+    }
+    const payingEntity = 'Interactive Brokers'
+    const interestCurrencyAmount = parseFloat(row[5])
+    if (interestCurrencyAmount > 0) {
+      interestIncomes.push({
+        type: 'interest',
+        incomeCurrencyCode: interestCurrencyCode,
+        incomeDate: paymentDate,
+        payingEntity,
+        incomeCurrencyAmount: interestCurrencyAmount,
+        whtCurrencyCode: interestCurrencyCode,
+        whtCurrencyAmount: 0, // No withholding tax on IBKR interest for Serbian residents
+      })
+    }
+  }
+  return interestIncomes
+}
+
+export const ibkrImporter = async (inputFile: string): Promise<PassiveIncomeInfo[]> => {
+  const csvCells = await parseCsvFile(inputFile)
+  const dividendIncomes = getDividendIncomes(csvCells)
+  const interestIncomes = getInterestIncomes(csvCells)
+  return [...dividendIncomes, ...interestIncomes]
 }

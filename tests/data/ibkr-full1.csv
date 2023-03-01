@@ -98,6 +98,9 @@ Dividends,Data,Total,,,60.0
 Withholding Tax,Header,Currency,Date,Description,Amount,Code
 Withholding Tax,Data,EUR,2023-01-12,ABC(SG0000123456) Cash Dividend EUR 0.30 per Share - SG Tax,-6.00,
 Withholding Tax,Data,Total,,,-6.00,
+Interest,Header,Currency,Date,Description,Amount
+Interest,Data,EUR,2023-01-03,EUR Credit Interest for Dec-2022,12.34
+Interest,Data,Total,,,12.34
 Interest Accruals,Header,Currency,Field Name,Field Value
 Interest Accruals,Data,Base Currency Summary,Starting Accrual Balance,0
 Interest Accruals,Data,Base Currency Summary,Interest Accrued,0
