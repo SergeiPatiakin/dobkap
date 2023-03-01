@@ -11,6 +11,7 @@ describe('getPassiveIncomeFilingInfo', () => {
     const result = await getPassiveIncomeFilingInfo(
       mockCurrencyServiceRepo,
       {
+        type: 'dividend',
         payingEntity: 'BMW',
         incomeDate: mockDate,
         incomeCurrencyCode: CurrencyCode.EUR,
@@ -20,6 +21,7 @@ describe('getPassiveIncomeFilingInfo', () => {
       }
     )
     expect(result).toEqual({
+      type: 'dividend',
       payingEntity: 'BMW',
       incomeDate: mockDate,
       grossIncome: {cents: BigInt(120 * 200 * 100)},
@@ -33,6 +35,7 @@ describe('getPassiveIncomeFilingInfo', () => {
     const result = await getPassiveIncomeFilingInfo(
       mockCurrencyServiceRepo,
       {
+        type: 'dividend',
         payingEntity: 'BMW',
         incomeDate: mockDate,
         incomeCurrencyCode: CurrencyCode.EUR,
@@ -42,6 +45,7 @@ describe('getPassiveIncomeFilingInfo', () => {
       }
     )
     expect(result).toEqual({
+      type: 'dividend',
       payingEntity: 'BMW',
       incomeDate: mockDate,
       grossIncome: {cents: BigInt(120 * 200 * 100)},
