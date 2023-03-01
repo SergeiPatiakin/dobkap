@@ -5,8 +5,9 @@ import { RsdAmount } from "./rsd-amount";
 
 export const PASSIVE_INCOME_TAX_RATE = 0.15
 
+export type PassiveIncomeType = 'dividend' | 'interest'
 export interface PassiveIncomeInfo {
-  type: 'dividend' | 'interest'
+  type: PassiveIncomeType
   payingEntity: string
   incomeDate: NaiveDate
   incomeCurrencyCode: CurrencyCode
@@ -16,7 +17,7 @@ export interface PassiveIncomeInfo {
 }
 
 export interface PassiveIncomeFilingInfo {
-  type: 'dividend' | 'interest'
+  type: PassiveIncomeType
   payingEntity: string
   incomeDate: NaiveDate
   grossIncome: RsdAmount

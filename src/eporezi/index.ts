@@ -18,6 +18,7 @@ export interface OpoData {
 }
 
 const TAX_FILING_DEADLINE_OFFSET = 30
+const SVP_INTEREST = "111401000"
 const SVP_DIVIDEND = "111402000"
 
 export const getFilingDeadline = (holidayService: HolidayService, paymentDate: NaiveDate) => holidayService.workingDayAfter(paymentDate, TAX_FILING_DEADLINE_OFFSET)
@@ -98,7 +99,12 @@ export const fillOpoForm = (data: OpoData): string => {
   
   document['ns1:PodaciPoreskeDeklaracije']['ns1:PodaciONacinuOstvarivanjaPrihoda']['ns1:Ostalo'] = data.realizationMethod
   
-  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:SifraVrstePrihoda'] = SVP_DIVIDEND
+  document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:SifraVrstePrihoda'] = ((): string => {
+    switch(data.passiveIncomeFilingInfo.type) {
+      case 'dividend': return SVP_DIVIDEND
+      case 'interest': return SVP_INTEREST
+    }
+  })()
   document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:BrutoPrihod'] = formatRsdAmount(data.passiveIncomeFilingInfo.grossIncome)
   document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:OsnovicaZaPorez'] = formatRsdAmount(data.passiveIncomeFilingInfo.grossIncome)
   document['ns1:PodaciPoreskeDeklaracije']['ns1:DeklarisaniPodaciOVrstamaPrihoda']['ns1:PodaciOVrstamaPrihoda']['ns1:ObracunatiPorez'] = formatRsdAmount(data.passiveIncomeFilingInfo.grossTaxPayable)
