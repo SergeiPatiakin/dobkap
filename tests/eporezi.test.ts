@@ -17,6 +17,7 @@ describe('fillOpoForm', () => {
       realizationMethod: 'Isplata na brokerski racun',
       filingDeadline: toNaiveDate('2020-08-16'),
       passiveIncomeFilingInfo: {
+        type: 'dividend',
         payingEntity: 'BMW',
         grossIncome: fromCurrency(117, 100),
         grossTaxPayable: fromCurrency(117, 15),
