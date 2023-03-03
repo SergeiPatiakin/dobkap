@@ -83,4 +83,18 @@ describe('ibkrImporter', () => {
     ])
     expect(formatNaiveDate(r[0].incomeDate)).toBe('2023-02-03')
   })
+  it('debit interest ignored', async () => {
+    const r = await ibkrImporter(path.join(__dirname, 'data/ibkr-interest2.csv'))
+    expect(r).toMatchObject([
+      {
+        type: 'interest',
+        incomeCurrencyCode: 'EUR',
+        payingEntity: 'Interactive Brokers',
+        incomeCurrencyAmount: 10.00,
+        whtCurrencyCode: 'EUR',
+        whtCurrencyAmount: 0,
+      },
+    ])
+    expect(formatNaiveDate(r[0].incomeDate)).toBe('2023-01-05')
+  })
 })

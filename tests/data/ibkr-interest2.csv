@@ -1,0 +1,10 @@
+Statement,Header,Field Name,Field Value
+Statement,Data,BrokerAddress,"Two Pickwick Plaza, Greenwich, CT 06830"
+Interest,Header,Currency,Date,Description,Amount
+Interest,Data,EUR,2023-01-05,EUR Credit Interest for Dec-2022,10.00
+Interest,Data,Total,,,10.00
+Interest,Data,GBP,2023-01-05,GBP Debit Interest for Dec-2022,-3.00
+Interest,Data,Total,,,-3.00
+Interest,Data,Total in EUR,,,-3.50
+Interest,Data,Total Interest in EUR,,,6.50
+Notes/Legal Notes,Data,,SIPC Member
