@@ -127,11 +127,11 @@ const getDividendIncomes = (csvCells: string[][]): PassiveIncomeInfo[] => {
   return [...dividendInfosMap.values()]
 }
 
+const toInterestKey = (date: NaiveDate, currencyCode: string) => `${formatNaiveDate(date)}:${currencyCode}`
 const isInterestSectionRow = (row: string[]) => row[0] === 'Interest' && row[1] === 'Data'
 const isInterestRow = (row: string[]) => row[0] === 'Interest' && row[1] === 'Data' && !row[2].startsWith('Total')
 
 export const getInterestIncomes = (csvCells: string[][]) => {
-  const interestIncomes: PassiveIncomeInfo[] = []
   const interestSectionStartIndex = csvCells.findIndex(x =>
     x[0] === 'Interest'
     && x[1] === 'Header'
@@ -140,6 +140,7 @@ export const getInterestIncomes = (csvCells: string[][]) => {
     && x[4] === 'Description'
     && x[5] === 'Amount'
   )
+  const interestInfosMap: Map<string, PassiveIncomeInfo> = new Map()
   for(
     let interestRowIndex = interestSectionStartIndex + 1;
     isInterestSectionRow(csvCells[interestRowIndex]);
@@ -151,24 +152,28 @@ export const getInterestIncomes = (csvCells: string[][]) => {
     const row = csvCells[interestRowIndex]
     const interestCurrencyCode: CurrencyCode = row[2] as CurrencyCode
     const paymentDate: NaiveDate = toNaiveDate(row[3]) // TODO: decode to day string first?
-    if (!row[4].startsWith(`${interestCurrencyCode} Credit Interest for `)) {
+    if (!(
+      row[4].startsWith(`${interestCurrencyCode} Credit Interest for `) ||
+      row[4].startsWith(`${interestCurrencyCode} Debit Interest for `)
+    )) {
       continue
     }
     const payingEntity = 'Interactive Brokers'
     const interestCurrencyAmount = parseFloat(row[5])
-    if (interestCurrencyAmount > 0) {
-      interestIncomes.push({
-        type: 'interest',
-        incomeCurrencyCode: interestCurrencyCode,
-        incomeDate: paymentDate,
-        payingEntity,
-        incomeCurrencyAmount: interestCurrencyAmount,
-        whtCurrencyCode: interestCurrencyCode,
-        whtCurrencyAmount: 0, // No withholding tax on IBKR interest for Serbian residents
-      })
+    const interestKey = toInterestKey(paymentDate, interestCurrencyCode)
+    const interestInfo = interestInfosMap.get(interestKey) ?? {
+      type: 'interest',
+      incomeCurrencyCode: interestCurrencyCode, // Initial value, will be overwritten
+      incomeDate: paymentDate,
+      payingEntity,
+      incomeCurrencyAmount: 0,
+      whtCurrencyCode: interestCurrencyCode,
+      whtCurrencyAmount: 0, // No withholding tax on IBKR interest for Serbian residents      
     }
+    interestInfo.incomeCurrencyAmount += interestCurrencyAmount
+    interestInfosMap.set(interestKey, interestInfo)
   }
-  return interestIncomes
+  return [...interestInfosMap.values()].filter(ii => ii.incomeCurrencyAmount > 0)
 }
 
 export const ibkrImporter = async (inputFile: string): Promise<PassiveIncomeInfo[]> => {

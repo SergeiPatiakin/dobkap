@@ -83,7 +83,7 @@ describe('ibkrImporter', () => {
     ])
     expect(formatNaiveDate(r[0].incomeDate)).toBe('2023-02-03')
   })
-  it('debit interest ignored', async () => {
+  it('debit interest deducted from credit interest in same currency', async () => {
     const r = await ibkrImporter(path.join(__dirname, 'data/ibkr-interest2.csv'))
     expect(r).toMatchObject([
       {
