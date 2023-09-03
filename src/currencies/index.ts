@@ -1,11 +1,16 @@
-import { NaiveDate, CurrencyCode } from "../data-types"
+import { NaiveDate, CurrencyCode, DayString } from "../data-types"
 import { nbsCurrencyService } from "./nbs"
 import { formatNaiveDate } from "../dates"
-import { singaporeMasCurrencyService } from "./singapore-mas"
 import { mexicoBdmCurrencyService } from "./mexico-bdm"
 
 interface ApiTokens {
   mexicoBdmToken: string
+}
+
+export type ExchangeRateInfo = {
+  dayString: DayString
+  currencyCode: CurrencyCode
+  currencyToBaseCurrencyRate: number
 }
 
 interface AsyncCache {
@@ -14,7 +19,10 @@ interface AsyncCache {
   set: (key: string, value: any) => Promise<void>
 }
 
-export const createCurrencyService = (apiTokens: Partial<ApiTokens>, cache?: AsyncCache) => async (day: NaiveDate, currencyCode: CurrencyCode): Promise<number> => {
+export const createCurrencyService = (args: { apiTokens?: Partial<ApiTokens>, cache?: AsyncCache, fallbackRates?: Array<ExchangeRateInfo> }) => async (day: NaiveDate, currencyCode: CurrencyCode): Promise<number> => {
+  const { cache } = args
+  const apiTokens: Partial<ApiTokens> = args.apiTokens ?? {}
+  const ibkrRates: Array<ExchangeRateInfo> = args.fallbackRates ?? []
   const cacheKey = `${formatNaiveDate(day)}-${currencyCode}`
   if (cache && await cache.has(cacheKey)){
     const { value } = await cache.get(cacheKey)
@@ -22,9 +30,39 @@ export const createCurrencyService = (apiTokens: Partial<ApiTokens>, cache?: Asy
   } else {
     let value
     if (currencyCode === CurrencyCode.SGD) {
-      // Use USD as an intermediate currency
-      const usdSgd = await singaporeMasCurrencyService(day, CurrencyCode.USD)
-      const usdRsd = await createCurrencyService(apiTokens)(day, CurrencyCode.USD)
+      // Use USD as an intermediate currency to fallback rates
+
+      // Find rate from SGD to base currency
+      let sgdBaseCurrency: number
+      const sgdBaseCurrencyInfo = ibkrRates.find(eri =>
+        eri.dayString === formatNaiveDate(day) &&
+        eri.currencyCode === CurrencyCode.SGD
+      )
+      if (sgdBaseCurrencyInfo === undefined) {
+        // Cannot find an entry for converting base currency to SGD. This must mean SGD is the base
+        // currency!
+        sgdBaseCurrency = 1
+      } else {
+        sgdBaseCurrency = sgdBaseCurrencyInfo.currencyToBaseCurrencyRate
+      }
+
+      // Find rate from USD to base currency
+      let usdBaseCurrency: number
+      const usdBaseCurrencyInfo = ibkrRates.find(eri =>
+        eri.dayString === formatNaiveDate(day) &&
+        eri.currencyCode === CurrencyCode.USD
+      )
+      if (usdBaseCurrencyInfo === undefined) {
+        // Cannot find an entry for converting base currency to USD. This must mean USD is the base
+        // currency!
+        usdBaseCurrency = 1
+      } else {
+        usdBaseCurrency = usdBaseCurrencyInfo.currencyToBaseCurrencyRate
+      }
+
+      const usdSgd = usdBaseCurrency / sgdBaseCurrency
+
+      const usdRsd = await createCurrencyService({ apiTokens })(day, CurrencyCode.USD)
       value = usdRsd / usdSgd
     } else if (currencyCode === CurrencyCode.MXN) {
       if (!apiTokens.mexicoBdmToken){
@@ -32,7 +70,7 @@ export const createCurrencyService = (apiTokens: Partial<ApiTokens>, cache?: Asy
       }
       // Use USD as an intermediate currency
       const usdSgd = await mexicoBdmCurrencyService(apiTokens.mexicoBdmToken, day, CurrencyCode.USD)
-      const usdRsd = await createCurrencyService(apiTokens)(day, CurrencyCode.USD)
+      const usdRsd = await createCurrencyService({ apiTokens })(day, CurrencyCode.USD)
       value = usdRsd / usdSgd
     } else {
       value = await nbsCurrencyService(day, currencyCode)

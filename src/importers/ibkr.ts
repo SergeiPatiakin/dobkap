@@ -3,6 +3,8 @@ import fs from 'fs'
 import { PassiveIncomeInfo } from '../passive-income'
 import { CurrencyCode, NaiveDate } from '../data-types'
 import { toNaiveDate, formatNaiveDate } from '../dates'
+import { ExchangeRateInfo } from '../currencies/index'
+import moment from 'moment'
 
 const parseCsvFile = async (filePath: string): Promise<string[][]> => {
   return new Promise((resolve, reject) => {
@@ -176,9 +178,50 @@ export const getInterestIncomes = (csvCells: string[][]) => {
   return [...interestInfosMap.values()].filter(ii => ii.incomeCurrencyAmount > 0)
 }
 
-export const ibkrImporter = async (inputFile: string): Promise<PassiveIncomeInfo[]> => {
+const isExchangeRateSectionRow = (row: string[]) => row[0] === 'Base Currency Exchange Rate' && row[1] === 'Data'
+
+export const getExchangeRateInfos = (csvCells: string[][]) => {
+  const statementPeriodRow = csvCells.find(x =>
+    x[0] === 'Statement' &&
+    x[1] === 'Data' &&
+    x[2] === 'Period'
+  )
+  if (statementPeriodRow === undefined) {
+    throw new Error('Cannot find statement period')
+  }
+  const statementDay: string = moment(statementPeriodRow[3]).format('YYYY-MM-DD')
+
+  const exchangeRateSectionStartIndex = csvCells.findIndex(x =>
+    x[0] === 'Base Currency Exchange Rate'
+    && x[1] === 'Header'
+    && x[2] === 'Currency'
+    && x[3] === 'Rate'
+  )
+  const exchangeRateInfos: Array<ExchangeRateInfo> = []
+  for (
+    let exchangeRateRowIndex = exchangeRateSectionStartIndex + 1;
+    isExchangeRateSectionRow(csvCells[exchangeRateRowIndex]);
+    exchangeRateRowIndex++
+  ) {
+    const row = csvCells[exchangeRateRowIndex]
+    const exchangeRateCurrencyCode: CurrencyCode = row[2] as CurrencyCode
+    exchangeRateInfos.push({
+      currencyCode: row[2] as CurrencyCode,
+      dayString: statementDay,
+      currencyToBaseCurrencyRate: Number(row[3]),
+    })
+  }
+}
+
+export const ibkrImporter = async (inputFile: string): Promise<{
+  passiveIncomeInfo: PassiveIncomeInfo[],
+  exchangeRateInfo: ExchangeRateInfo[],
+}> => {
   const csvCells = await parseCsvFile(inputFile)
   const dividendIncomes = getDividendIncomes(csvCells)
   const interestIncomes = getInterestIncomes(csvCells)
-  return [...dividendIncomes, ...interestIncomes]
+  return {
+    passiveIncomeInfo: [...dividendIncomes, ...interestIncomes],
+    exchangeRateInfo: [], // TODO
+  }
 }

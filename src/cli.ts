@@ -46,13 +46,13 @@ const processImport = async (args: DobKapImportArgs) => {
   if (normArgs.importer === 'trivial'){
     passiveIncomeInfos = await trivialImporter(normArgs.inputFilePath)
   } else if (normArgs.importer === 'ibkr'){
-    passiveIncomeInfos = await ibkrImporter(normArgs.inputFilePath)
+    passiveIncomeInfos = (await ibkrImporter(normArgs.inputFilePath)).passiveIncomeInfo
   } else {
     throw new Error('Unknown importer')
   }
 
   const apiTokens = {mexicoBdmToken: conf.mexicoBdmToken}
-  const currencyService = createCurrencyService(apiTokens)
+  const currencyService = createCurrencyService({ apiTokens })
 
   for (const [idx, passiveIncomeInfo] of passiveIncomeInfos.entries()){
     const passiveIncomeFilingInfo = await getPassiveIncomeFilingInfo(
@@ -103,7 +103,7 @@ const processCheckRate = async (args: DobKapCheckRateArgs) => {
   const apiTokens = {
     mexicoBdmToken: conf.mexicoBdmToken
   }
-  const currencyService = createCurrencyService(apiTokens)
+  const currencyService = createCurrencyService({ apiTokens })
   const rate = await currencyService(toNaiveDate(args.day), args.currency as any)
   console.info(rate)
 }
