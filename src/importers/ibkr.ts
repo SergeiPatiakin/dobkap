@@ -10,7 +10,7 @@ const parseCsvFile = async (filePath: string): Promise<string[][]> => {
   return new Promise((resolve, reject) => {
     const results: string[][] = []
     fs.createReadStream(filePath)
-      .pipe(csv())
+      .pipe(csv({ headers: false}))
       .on('data', x => {
         results.push(x)
       })
@@ -180,7 +180,7 @@ export const getInterestIncomes = (csvCells: string[][]) => {
 
 const isExchangeRateSectionRow = (row: string[]) => row[0] === 'Base Currency Exchange Rate' && row[1] === 'Data'
 
-export const getExchangeRateInfos = (csvCells: string[][]) => {
+export const getExchangeRateInfos = (csvCells: string[][]): ExchangeRateInfo[] => {
   const statementPeriodRow = csvCells.find(x =>
     x[0] === 'Statement' &&
     x[1] === 'Data' &&
@@ -204,24 +204,25 @@ export const getExchangeRateInfos = (csvCells: string[][]) => {
     exchangeRateRowIndex++
   ) {
     const row = csvCells[exchangeRateRowIndex]
-    const exchangeRateCurrencyCode: CurrencyCode = row[2] as CurrencyCode
     exchangeRateInfos.push({
       currencyCode: row[2] as CurrencyCode,
       dayString: statementDay,
       currencyToBaseCurrencyRate: Number(row[3]),
     })
   }
+  return exchangeRateInfos
 }
 
 export const ibkrImporter = async (inputFile: string): Promise<{
   passiveIncomeInfo: PassiveIncomeInfo[],
-  exchangeRateInfo: ExchangeRateInfo[],
+  exchangeRateInfos: ExchangeRateInfo[],
 }> => {
   const csvCells = await parseCsvFile(inputFile)
   const dividendIncomes = getDividendIncomes(csvCells)
   const interestIncomes = getInterestIncomes(csvCells)
+  const exchangeRateInfos = getExchangeRateInfos(csvCells)
   return {
     passiveIncomeInfo: [...dividendIncomes, ...interestIncomes],
-    exchangeRateInfo: [], // TODO
+    exchangeRateInfos,
   }
 }

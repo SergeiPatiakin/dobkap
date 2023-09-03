@@ -1,5 +1,6 @@
 Statement,Header,Field Name,Field Value
 Statement,Data,BrokerAddress,"Two Pickwick Plaza, Greenwich, CT 06830"
+Statement,Data,Period,"January 12, 2023"
 Dividends,Header,Currency,Date,Description,Amount
 Dividends,Data,EUR,2023-01-12,ABC(FR0000000001) Cash Dividend EUR 0.60 per Share (Ordinary Dividend),60.0
 Dividends,Data,Total,,,60.0
