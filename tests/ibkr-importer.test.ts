@@ -4,7 +4,7 @@ import { ibkrImporter } from '../src/importers/ibkr'
 
 describe('ibkrImporter', () => {
   it('basic - full report', async () => {
-    const r = (await ibkrImporter(path.join(__dirname, 'data/ibkr-full1.csv'))).passiveIncomeInfo
+    const r = (await ibkrImporter(path.join(__dirname, 'data/ibkr-full1.csv'))).passiveIncomeInfos
     expect(r).toMatchObject([
       {
         incomeCurrencyCode: 'EUR',
@@ -25,7 +25,7 @@ describe('ibkrImporter', () => {
     expect(formatNaiveDate(r[0].incomeDate)).toBe('2023-01-12')
   })
   it('basic - dividends section', async () => {
-    const r = (await ibkrImporter(path.join(__dirname, 'data/ibkr-dividend1.csv'))).passiveIncomeInfo
+    const r = (await ibkrImporter(path.join(__dirname, 'data/ibkr-dividend1.csv'))).passiveIncomeInfos
     expect(r).toMatchObject([
       {
         incomeCurrencyCode: 'EUR',
@@ -38,7 +38,7 @@ describe('ibkrImporter', () => {
     expect(formatNaiveDate(r[0].incomeDate)).toBe('2023-01-12')
   })
   it('basic - multiple dividends', async () => {
-    const r = (await ibkrImporter(path.join(__dirname, 'data/ibkr-dividend2.csv'))).passiveIncomeInfo
+    const r = (await ibkrImporter(path.join(__dirname, 'data/ibkr-dividend2.csv'))).passiveIncomeInfos
     expect(r).toMatchObject([
       // One dividend from ABC in EUR
       {
@@ -70,7 +70,7 @@ describe('ibkrImporter', () => {
     expect(formatNaiveDate(r[2].incomeDate)).toBe('2023-01-12')
   })
   it('interest income', async () => {
-    const r = (await ibkrImporter(path.join(__dirname, 'data/ibkr-interest1.csv'))).passiveIncomeInfo
+    const r = (await ibkrImporter(path.join(__dirname, 'data/ibkr-interest1.csv'))).passiveIncomeInfos
     expect(r).toMatchObject([
       {
         type: 'interest',
@@ -84,7 +84,7 @@ describe('ibkrImporter', () => {
     expect(formatNaiveDate(r[0].incomeDate)).toBe('2023-02-03')
   })
   it('debit interest deducted from credit interest in same currency', async () => {
-    const r = (await ibkrImporter(path.join(__dirname, 'data/ibkr-interest2.csv'))).passiveIncomeInfo
+    const r = (await ibkrImporter(path.join(__dirname, 'data/ibkr-interest2.csv'))).passiveIncomeInfos
     expect(r).toMatchObject([
       {
         type: 'interest',

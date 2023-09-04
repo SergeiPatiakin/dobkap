@@ -46,7 +46,7 @@ const processImport = async (args: DobKapImportArgs) => {
   if (normArgs.importer === 'trivial'){
     passiveIncomeInfos = await trivialImporter(normArgs.inputFilePath)
   } else if (normArgs.importer === 'ibkr'){
-    passiveIncomeInfos = (await ibkrImporter(normArgs.inputFilePath)).passiveIncomeInfo
+    passiveIncomeInfos = (await ibkrImporter(normArgs.inputFilePath)).passiveIncomeInfos
   } else {
     throw new Error('Unknown importer')
   }

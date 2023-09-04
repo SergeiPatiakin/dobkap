@@ -214,7 +214,7 @@ export const getExchangeRateInfos = (csvCells: string[][]): ExchangeRateInfo[] =
 }
 
 export const ibkrImporter = async (inputFile: string): Promise<{
-  passiveIncomeInfo: PassiveIncomeInfo[],
+  passiveIncomeInfos: PassiveIncomeInfo[],
   exchangeRateInfos: ExchangeRateInfo[],
 }> => {
   const csvCells = await parseCsvFile(inputFile)
@@ -222,7 +222,7 @@ export const ibkrImporter = async (inputFile: string): Promise<{
   const interestIncomes = getInterestIncomes(csvCells)
   const exchangeRateInfos = getExchangeRateInfos(csvCells)
   return {
-    passiveIncomeInfo: [...dividendIncomes, ...interestIncomes],
+    passiveIncomeInfos: [...dividendIncomes, ...interestIncomes],
     exchangeRateInfos,
   }
 }
