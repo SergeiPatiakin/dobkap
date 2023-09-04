@@ -16,6 +16,6 @@ export {
   ibkrImporter,
   toNaiveDate,
   Conf,
-  PassiveIncomeInfo as DividendInfo,
+  PassiveIncomeInfo,
   OpoData,
 }
