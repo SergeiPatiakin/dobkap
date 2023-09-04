@@ -189,7 +189,7 @@ export const getExchangeRateInfos = (csvCells: string[][]): ExchangeRateInfo[] =
   if (statementPeriodRow === undefined) {
     throw new Error('Cannot find statement period')
   }
-  const statementDay: string = moment(statementPeriodRow[3]).format('YYYY-MM-DD')
+  const statementDay: string = moment(statementPeriodRow[3], "MMMM D, YYYY").format('YYYY-MM-DD')
 
   const exchangeRateSectionStartIndex = csvCells.findIndex(x =>
     x[0] === 'Base Currency Exchange Rate'
