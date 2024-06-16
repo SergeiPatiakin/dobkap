@@ -8,7 +8,7 @@ import { ibkrImporter } from "./importers/ibkr";
 
 export {
   createCurrencyService,
-  getPassiveIncomeFilingInfo as getDividendIncomeInfo,
+  getPassiveIncomeFilingInfo,
   fillOpoForm,
   getFilingDeadline,
   createHolidayService,
