@@ -69,9 +69,9 @@ export const createCurrencyService = (args: { apiTokens?: Partial<ApiTokens>, ca
         throw new Error('Token required')
       }
       // Use USD as an intermediate currency
-      const usdSgd = await mexicoBdmCurrencyService(apiTokens.mexicoBdmToken, day, CurrencyCode.USD)
+      const usdMxn = await mexicoBdmCurrencyService(apiTokens.mexicoBdmToken, day, CurrencyCode.USD)
       const usdRsd = await createCurrencyService({ apiTokens })(day, CurrencyCode.USD)
-      value = usdRsd / usdSgd
+      value = usdRsd / usdMxn
     } else {
       value = await nbsCurrencyService(day, currencyCode)
     }
