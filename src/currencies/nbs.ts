@@ -6,6 +6,18 @@ const nbsCurrencyCodeMapping: Map<string, CurrencyCode> = new Map([
   ['EUR', CurrencyCode.EUR],
   ['GBP', CurrencyCode.GBP],
   ['USD', CurrencyCode.USD],
+  ['AED', CurrencyCode.AED],
+  ['AUD', CurrencyCode.AUD],
+  ['CAD', CurrencyCode.CAD],
+  ['CHF', CurrencyCode.CHF],
+  ['CZK', CurrencyCode.CZK],
+  ['DKK', CurrencyCode.DKK],
+  ['HUF', CurrencyCode.HUF],
+  ['JPY', CurrencyCode.JPY],
+  ['NOK', CurrencyCode.NOK],
+  ['PLN', CurrencyCode.PLN],
+  ['SEK', CurrencyCode.SEK],
+  ['TRY', CurrencyCode.TRY],
 ])
 
 export const nbsSupportedCurrencies = [...nbsCurrencyCodeMapping.values()]
