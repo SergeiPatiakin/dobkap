@@ -13,7 +13,7 @@
     "dobkap": "./bin/dobkap"
   },
   "author": "Sergei Patiakin",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/jest": "^26.0.7",
     "jest": "^26.1.0",
