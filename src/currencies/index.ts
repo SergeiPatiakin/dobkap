@@ -65,11 +65,43 @@ export const createCurrencyService = (args: { apiTokens?: Partial<ApiTokens>, ca
       const usdRsd = await createCurrencyService({ apiTokens })(day, CurrencyCode.USD)
       value = usdRsd / usdSgd
     } else if (currencyCode === CurrencyCode.MXN) {
-      if (!apiTokens.mexicoBdmToken){
-        throw new Error('Token required')
-      }
       // Use USD as an intermediate currency
-      const usdMxn = await mexicoBdmCurrencyService(apiTokens.mexicoBdmToken, day, CurrencyCode.USD)
+
+      let usdMxn: number
+      if (apiTokens.mexicoBdmToken) {
+        usdMxn = await mexicoBdmCurrencyService(apiTokens.mexicoBdmToken, day, CurrencyCode.USD)
+      } else {
+        // Find rate from MXN to base currency
+        let mxnBaseCurrency: number
+        const mxnBaseCurrencyInfo = ibkrRates.find(eri =>
+          eri.dayString === formatNaiveDate(day) &&
+          eri.currencyCode === CurrencyCode.MXN
+        )
+        if (mxnBaseCurrencyInfo === undefined) {
+          // Cannot find an entry for converting base currency to MXN. This must mean MXN is the base
+          // currency!
+          mxnBaseCurrency = 1
+        } else {
+          mxnBaseCurrency = mxnBaseCurrencyInfo.currencyToBaseCurrencyRate
+        }
+
+        // Find rate from MXN to base currency
+        let usdBaseCurrency: number
+        const usdBaseCurrencyInfo = ibkrRates.find(eri =>
+          eri.dayString === formatNaiveDate(day) &&
+          eri.currencyCode === CurrencyCode.USD
+        )
+        if (usdBaseCurrencyInfo === undefined) {
+          // Cannot find an entry for converting base currency to USD. This must mean USD is the base
+          // currency!
+          usdBaseCurrency = 1
+        } else {
+          usdBaseCurrency = usdBaseCurrencyInfo.currencyToBaseCurrencyRate
+        }
+
+        usdMxn = usdBaseCurrency / mxnBaseCurrency
+      }
+
       const usdRsd = await createCurrencyService({ apiTokens })(day, CurrencyCode.USD)
       value = usdRsd / usdMxn
     } else {
