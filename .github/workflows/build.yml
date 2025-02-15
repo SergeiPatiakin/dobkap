@@ -13,11 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v3
         with:
           node-version: 16.20.0
           cache: "npm"
-          cache-dependency-path: ./package.json
       
       - name: Install NPM dependencies
         run: npm install
