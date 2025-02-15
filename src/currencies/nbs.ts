@@ -1,6 +1,7 @@
 import got from 'got'
 import { NaiveDate, CurrencyCode } from '../data-types'
-import { JSDOM } from 'jsdom'
+const jsdom = require('jsdom')
+const { JSDOM } = jsdom
 
 const nbsCurrencyCodeMapping: Map<string, CurrencyCode> = new Map([
   ['EUR', CurrencyCode.EUR],
@@ -33,7 +34,7 @@ export const nbsCurrencyService = async (day: NaiveDate, currencyCode: CurrencyC
 
   const dom = new JSDOM(result.body)
   const y = dom.window.document.querySelectorAll("table tr")
-  const exchangeRates = Array.from(y).flatMap(ye => {
+  const exchangeRates = Array.from(y).flatMap((ye: any) => {
     const nbsCurrencyCode = ye.children[0].innerHTML
     if (nbsCurrencyCode.length > 1 && nbsCurrencyCode.length <= 5) { // Filter out header ETC
       return [{
