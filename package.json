@@ -1,6 +1,6 @@
 {
   "name": "dobkap",
-  "version": "0.24.2",
+  "version": "0.24.3",
   "description": "",
   "main": "lib/index.js",
   "scripts": {
