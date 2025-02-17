@@ -8,5 +8,5 @@ import { readFile } from '../tools';
 export const trivialImporter = async (inputFile: string): Promise<PassiveIncomeInfo[]> => {
   const fileContents = await readFile(inputFile, 'utf8')
   const a = JSON.parse(fileContents)
-  return [{...a, incomeDate: toNaiveDate(a.paymentDate)}]
+  return [{...a, incomeDate: toNaiveDate(a.incomeDate)}]
 }
